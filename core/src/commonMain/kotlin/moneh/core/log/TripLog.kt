@@ -2,6 +2,7 @@ package moneh.core.log
 
 import moneh.core.trip.TripEvent
 import org.kotlincrypto.hash.sha2.SHA256
+import kotlin.time.Instant
 
 /**
  * Append-only, tamper-evident record of a trip: each entry's hash covers the previous hash and the event's
@@ -56,7 +57,7 @@ class TripLog private constructor(
 internal fun encode(event: TripEvent): String {
     val fields =
         when (event) {
-            is TripEvent.Hired -> listOf("Hired", event.tariffVersion)
+            is TripEvent.Hired -> listOf("Hired", event.tariffVersion, if (event.vatExempt) "1" else "0")
             is TripEvent.Moved -> listOf("Moved", event.metres.toString())
             is TripEvent.Paused -> listOf("Paused")
             is TripEvent.Resumed -> listOf("Resumed")
@@ -67,4 +68,42 @@ internal fun encode(event: TripEvent): String {
     return (listOf(ENCODING_VERSION, event.at.toEpochMilliseconds().toString()) + fields).joinToString("") { "${it.length}:$it" }
 }
 
+/** Inverse of [encode]. Throws [IllegalArgumentException] for anything [encode] could not have produced. */
+internal fun decode(encoded: String): TripEvent {
+    val fields = splitFields(encoded)
+    require(fields.size > HEADER_FIELDS - 1 && fields[0] == ENCODING_VERSION) { "Unsupported encoding: $encoded" }
+    val (_, epochMs, type) = fields
+    val at = Instant.fromEpochMilliseconds(epochMs.toLong())
+    val args = fields.drop(HEADER_FIELDS)
+
+    fun arg(index: Int) = requireNotNull(args.getOrNull(index)) { "Missing field $index: $encoded" }
+    return when (type) {
+        "Hired" -> TripEvent.Hired(at, arg(0), arg(1) == "1")
+        "Moved" -> TripEvent.Moved(at, arg(0).toLong())
+        "Paused" -> TripEvent.Paused(at)
+        "Resumed" -> TripEvent.Resumed(at)
+        "ExtraAdded" -> TripEvent.ExtraAdded(at, arg(0), arg(1).ifEmpty { null }?.toLong())
+        "Stopped" -> TripEvent.Stopped(at)
+        "Settled" -> TripEvent.Settled(at)
+        else -> throw IllegalArgumentException("Unknown event $type")
+    }.also { require(encode(it) == encoded) { "Non-canonical encoding: $encoded" } }
+}
+
+private fun splitFields(encoded: String): List<String> {
+    val fields = mutableListOf<String>()
+    var index = 0
+    while (index < encoded.length) {
+        val colon = encoded.indexOf(':', index)
+        require(colon > index) { "Malformed encoding: $encoded" }
+        val end = colon + 1 + encoded.substring(index, colon).toInt()
+        require(end <= encoded.length) { "Malformed encoding: $encoded" }
+        fields += encoded.substring(colon + 1, end)
+        index = end
+    }
+    return fields
+}
+
 private const val ENCODING_VERSION = "v1"
+
+/** Version, timestamp and event type precede each event's own fields. */
+private const val HEADER_FIELDS = 3

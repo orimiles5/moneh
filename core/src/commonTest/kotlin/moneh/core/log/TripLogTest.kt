@@ -4,6 +4,7 @@ import moneh.core.trip.TripEvent
 import moneh.core.trip.TripState
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
@@ -29,7 +30,7 @@ class TripLogTest {
     @Test
     fun encodingIsStable() {
         // Pinned: a change here means old logs would no longer verify.
-        assertEquals("2:v113:17923176000005:Hired10:il-2026-04", log.entries[0].encoded)
+        assertEquals("2:v113:17923176000005:Hired10:il-2026-041:0", log.entries[0].encoded)
         assertEquals("2:v113:179231772000010:ExtraAdded11:expressLane4:1200", log.entries[2].encoded)
     }
 
@@ -37,6 +38,20 @@ class TripLogTest {
     fun knownHash() {
         // SHA-256 of 64 zeros followed by the first encoded entry, computed independently with shasum.
         assertEquals(GENESIS_HASH_OF_FIRST, log.entries[0].hash)
+    }
+
+    @Test
+    fun decodeInvertsEncode() {
+        assertEquals(events, log.entries.map { decode(it.encoded) })
+        val eilat = TripEvent.Hired(start, "il-2026-04", vatExempt = true)
+        assertEquals(eilat, decode(encode(eilat)))
+    }
+
+    @Test
+    fun decodeRejectsMalformedInput() {
+        listOf("", "2:v2", "2:v113:17923176000005:Bogus", "2:v113:179231760000099:Hired", "2:v113:17923176000005:Hired", "x").forEach {
+            assertFailsWith<IllegalArgumentException>(it) { decode(it) }
+        }
     }
 
     @Test
@@ -66,6 +81,6 @@ class TripLogTest {
     }
 
     private companion object {
-        const val GENESIS_HASH_OF_FIRST = "f9fbfa80ff0bb52867f60476cb2b24107e37acd0054d95951f23ee16e4f09e5b"
+        const val GENESIS_HASH_OF_FIRST = "def26a6904b73785e3cc089b57963be715af29d86585725edb8f515f4ce4e41e"
     }
 }

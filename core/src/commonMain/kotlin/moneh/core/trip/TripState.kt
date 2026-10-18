@@ -16,7 +16,8 @@ sealed interface TripState {
         fun hire(
             at: Instant,
             tariffVersion: String,
-        ) = Hired(listOf(TripEvent.Hired(at, tariffVersion)))
+            vatExempt: Boolean = false,
+        ) = Hired(listOf(TripEvent.Hired(at, tariffVersion, vatExempt)))
     }
 
     data class Hired internal constructor(

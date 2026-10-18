@@ -12,13 +12,11 @@ import kotlin.time.Instant
  * The fare as a pure function of the tariff and the trip's events, as of [asOf].
  * Time is charged while hired and not paused; each millisecond and each metre at the rate of the band it falls in.
  * Time and distance are additive. Distance tiers follow cumulative trip distance.
- * [vatExempt] covers zones without VAT, such as Eilat.
  */
 fun computeFare(
     tariff: Tariff,
     events: List<TripEvent>,
     asOf: Instant,
-    vatExempt: Boolean = false,
 ): FareBreakdown {
     val hired = events.firstOrNull() as? TripEvent.Hired ?: throw IllegalArgumentException("A trip starts with Hired")
     require(hired.tariffVersion == tariff.id) { "Trip uses tariff ${hired.tariffVersion}, not ${tariff.id}" }
@@ -33,7 +31,7 @@ fun computeFare(
     val extras = meter.extras
     val passThrough = meter.passThrough
     val subtotal = starting + time + distance + extras
-    val vatBasisPoints = if (vatExempt) 0 else tariff.vatBasisPoints
+    val vatBasisPoints = if (hired.vatExempt) 0 else tariff.vatBasisPoints
     val numerator = subtotal * (BASIS_POINTS_PER_WHOLE + vatBasisPoints) + passThrough * UNITS * BASIS_POINTS_PER_WHOLE
     val denominator = UNITS * BASIS_POINTS_PER_WHOLE
     val total = roundHalfUp(numerator, denominator)

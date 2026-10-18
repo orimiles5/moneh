@@ -21,12 +21,12 @@ class FareEngineTest {
 
     private fun at(local: String): Instant = LocalDateTime.parse(local).toInstant(israel)
 
-    private fun hire(local: String) = TripState.Idle.hire(at(local), tariff.id)
-
-    private fun total(
-        trip: TripState,
+    private fun hire(
+        local: String,
         vatExempt: Boolean = false,
-    ) = computeFare(tariff, trip.events, trip.events.last().at, vatExempt).total.minorUnits
+    ) = TripState.Idle.hire(at(local), tariff.id, vatExempt)
+
+    private fun total(trip: TripState) = computeFare(tariff, trip.events, trip.events.last().at).total.minorUnits
 
     @Test
     fun shortDaytimeTrip() {
@@ -87,8 +87,8 @@ class FareEngineTest {
 
     @Test
     fun eilatPaysNoVat() {
-        val trip = hire("2026-10-18T10:00").move(at("2026-10-18T10:10"), 5_000).stop(at("2026-10-18T10:10"))
-        assertEquals(3531, total(trip, vatExempt = true))
+        val trip = hire("2026-10-18T10:00", vatExempt = true).move(at("2026-10-18T10:10"), 5_000).stop(at("2026-10-18T10:10"))
+        assertEquals(3531, total(trip))
     }
 
     @Test
