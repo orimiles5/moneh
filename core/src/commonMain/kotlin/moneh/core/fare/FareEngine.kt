@@ -90,7 +90,11 @@ private class Meter(
     private fun addExtra(event: TripEvent.ExtraAdded) {
         val extra = tariff.extras[event.extraId] ?: throw IllegalArgumentException("Unknown extra ${event.extraId}")
         when (val price = extra.price) {
-            null -> passThrough += requireNotNull(event.amountMinorUnits) { "Extra ${event.extraId} needs an amount" }
+            null -> {
+                val amount = requireNotNull(event.amountMinorUnits) { "Extra ${event.extraId} needs an amount" }
+                require(amount >= 0) { "Extra ${event.extraId} cannot be negative" }
+                passThrough += amount
+            }
             else -> extras += price * UNITS
         }
     }
