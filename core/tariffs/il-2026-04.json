@@ -1,0 +1,42 @@
+{
+  "id": "il-2026-04",
+  "country": "IL",
+  "currency": "ILS",
+  "timeZone": "Asia/Jerusalem",
+  "effectiveFrom": "2026-04-01",
+  "effectiveUntil": "2027-03-31",
+  "sources": [
+    {
+      "title": "צו פיקוח על מחירי מצרכים ושירותים (מחירי נסיעה במוניות) (תיקון), התשפ\"ו-2026, ק\"ת 12345, 30.3.2026, §4(3) and §6 (הוראת שעה)",
+      "url": "https://www.gov.il/BlobFolder/policy/taxi-rate-2026/he/taxi-rate-26.pdf"
+    },
+    {
+      "title": "צו פיקוח על מחירי מצרכים ושירותים (מחירי נסיעה במוניות), התשע\"ח-2018, ק\"ת 8034, 5.7.2018, §1 (day and hour bands)",
+      "url": "https://www.gov.il/BlobFolder/dynamiccollectorresultitem/supervisionorder_05072018/he/decision_and_directives_SupervisionOrder_05072018.pdf"
+    }
+  ],
+  "vatBasisPoints": 1800,
+  "restDayCalendar": "IL",
+  "dayStartsAt": "06:00",
+  "rates": {
+    "A": { "startingFare": 1056, "perMinute": 165, "perKm": [{ "fromKm": 0, "price": 165 }, { "fromKm": 10, "price": 321 }] },
+    "B": { "startingFare": 1056, "perMinute": 198, "perKm": [{ "fromKm": 0, "price": 198 }, { "fromKm": 10, "price": 354 }] },
+    "C": { "startingFare": 1056, "perMinute": 231, "perKm": [{ "fromKm": 0, "price": 231 }, { "fromKm": 10, "price": 387 }] }
+  },
+  "schedule": [
+    { "days": ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY"], "bands": [{ "from": "06:00", "rate": "A" }, { "from": "21:01", "rate": "B" }] },
+    { "days": ["THURSDAY"], "bands": [{ "from": "06:00", "rate": "A" }, { "from": "21:01", "rate": "B" }, { "from": "23:01", "rate": "C" }] },
+    { "days": ["REST_DAY_EVE"], "bands": [{ "from": "06:00", "rate": "A" }, { "from": "16:01", "rate": "B" }, { "from": "21:01", "rate": "C" }] },
+    { "days": ["REST_DAY"], "bands": [{ "from": "06:00", "rate": "B" }, { "from": "19:01", "rate": "C" }] }
+  ],
+  "extras": {
+    "booking": { "price": 490 },
+    "airportBenGurion": { "price": 424 },
+    "airportRamonHaifa": { "price": 169 },
+    "highway6": { "price": 1695 },
+    "highway6Segment18": { "price": 656 },
+    "carmelTunnelsOneSegment": { "price": 1002 },
+    "carmelTunnelsBothSegments": { "price": 2003 },
+    "expressLane": {}
+  }
+}
