@@ -21,3 +21,30 @@ jobs:
           java-version: 17
       - uses: gradle/actions/setup-gradle@v5
       - run: ./gradlew :core:jvmTest ktlintCheck :core:detekt
+
+  ios:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v5
+      - uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
+      - run: brew install xcodegen swiftlint swiftformat
+      - name: Lint
+        working-directory: ios
+        run: swiftlint --strict && swiftformat --lint .
+      - name: Core iOS tests and XCFramework
+        run: ./gradlew :core:iosSimulatorArm64Test :core:assembleMonehCoreReleaseXCFramework
+      - name: Build and test app
+        working-directory: ios
+        run: |
+          xcodegen
+          xcodebuild -project Moneh.xcodeproj -scheme Moneh \
+            -destination 'platform=iOS Simulator,name=iPhone 17' test | tail -40
+          exit ${PIPESTATUS[0]}
