@@ -1,0 +1,12 @@
+{
+  "sourceLanguage" : "he",
+  "strings" : {
+    "meter.idle.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Ready" } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "מוכן" } }
+      }
+    }
+  },
+  "version" : "1.0"
+}

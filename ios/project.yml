@@ -1,0 +1,52 @@
+name: Moneh
+options:
+  developmentLanguage: he
+  deploymentTarget:
+    iOS: "18.0"
+configFiles:
+  Debug: Config/App.xcconfig
+  Release: Config/App.xcconfig
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    SWIFT_TREAT_WARNINGS_AS_ERRORS: YES
+    GCC_TREAT_WARNINGS_AS_ERRORS: YES
+    LOCALIZATION_PREFERS_STRING_CATALOGS: YES
+    SWIFT_EMIT_LOC_STRINGS: YES
+    DEVELOPMENT_TEAM: ""
+targets:
+  Moneh:
+    type: application
+    platform: iOS
+    sources: [App]
+    dependencies:
+      # Built by ./gradlew :core:assembleMonehCoreReleaseXCFramework
+      - framework: ../core/build/XCFrameworks/release/MonehCore.xcframework
+        embed: false
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: $(APP_DISPLAY_NAME)
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGNING_ALLOWED: NO
+  MonehTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources: [Tests]
+    dependencies:
+      - target: Moneh
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGNING_ALLOWED: NO
+schemes:
+  Moneh:
+    build:
+      targets:
+        Moneh: all
+    test:
+      targets: [MonehTests]
