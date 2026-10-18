@@ -5,13 +5,16 @@ detekt = "2.0.0-alpha.6"
 kotlinx-datetime = "0.8.0"
 kosherjava = "2.5.0"
 kotlincrypto-hash = "0.8.0"
+kotlinx-serialization = "1.11.0"
 
 [libraries]
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlincrypto-sha2 = { module = "org.kotlincrypto.hash:sha2", version.ref = "kotlincrypto-hash" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 kosherjava = { module = "com.kosherjava:zmanim", version.ref = "kosherjava" }
 
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint-gradle" }
 detekt = { id = "dev.detekt", version.ref = "detekt" }
