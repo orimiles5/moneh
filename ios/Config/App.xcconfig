@@ -1,3 +1,5 @@
 // The app's name and identity live here and nowhere else.
 APP_DISPLAY_NAME = Moneh
-PRODUCT_BUNDLE_IDENTIFIER = com.orimiles.moneh
+APP_BUNDLE_IDENTIFIER = com.orimiles.moneh
+// Your Apple Developer Team ID, for running on a device. Empty builds for the Simulator only.
+DEVELOPMENT_TEAM =

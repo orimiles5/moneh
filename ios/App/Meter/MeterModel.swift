@@ -17,13 +17,20 @@ final class MeterModel {
     @ObservationIgnored private var meter: Meter
     @ObservationIgnored private let store: TripStore
     @ObservationIgnored private let feed: LocationFeed?
+    @ObservationIgnored private let liveActivity: LiveActivityController?
     @ObservationIgnored private let now: () -> Date
     @ObservationIgnored private var ticker: Task<Void, Never>?
 
-    /// Pass a nil [feed] to run without CoreLocation (tests, previews).
-    init(store: TripStore = .standard, feed: LocationFeed? = LocationFeed(), now: @escaping () -> Date = Date.init) {
+    /// Pass nil [feed] and [liveActivity] to run without CoreLocation or ActivityKit (tests, previews).
+    init(
+        store: TripStore = .standard,
+        feed: LocationFeed? = LocationFeed(),
+        liveActivity: LiveActivityController? = LiveActivityController(),
+        now: @escaping () -> Date = Date.init
+    ) {
         self.store = store
         self.feed = feed
+        self.liveActivity = liveActivity
         self.now = now
         meter = store.loadCurrent().flatMap { Meter.companion.restore(entries: $0) } ?? Meter(tariffId: Self.tariffId)
         phaseChanged()
@@ -99,6 +106,7 @@ final class MeterModel {
 
     private func refresh() {
         reading = FareReading(meter.reading(nowMs: nowMs))
+        liveActivity?.update(with: reading, now: now())
     }
 
     private func receive(_ location: CLLocation) {

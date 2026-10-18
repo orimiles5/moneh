@@ -2,15 +2,49 @@
   "sourceLanguage" : "he",
   "strings" : {
     "CFBundleDisplayName" : {
+      "comment" : "Bundle display name",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Moneh" } },
-        "he" : { "stringUnit" : { "state" : "translated", "value" : "מונה" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moneh"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "מונה"
+          }
+        }
+      }
+    },
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "he" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Moneh"
+          }
+        }
       }
     },
     "NSLocationWhenInUseUsageDescription" : {
+      "comment" : "Privacy - Location When In Use Usage Description",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Moneh uses your location to measure the trip distance while the meter is running. Your location stays on this device." } },
-        "he" : { "stringUnit" : { "state" : "translated", "value" : "מונה משתמש במיקום כדי למדוד את מרחק הנסיעה בזמן שהמונה פועל. המיקום נשאר במכשיר." } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moneh uses your location to measure the trip distance while the meter is running. Your location stays on this device."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "מונה משתמש במיקום כדי למדוד את מרחק הנסיעה בזמן שהמונה פועל. המיקום נשאר במכשיר."
+          }
+        }
       }
     }
   },

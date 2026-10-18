@@ -8,7 +8,7 @@ struct MeterModelTests {
     private var clock = Date(timeIntervalSince1970: 1_792_317_600) // Sunday 2026-10-18 10:00 in Israel
 
     private func model(at date: Date) -> MeterModel {
-        MeterModel(store: store, feed: nil, now: { date })
+        MeterModel(store: store, feed: nil, liveActivity: nil, now: { date })
     }
 
     @Test func runsAndSettlesATrip() {

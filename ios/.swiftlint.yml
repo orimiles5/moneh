@@ -1,4 +1,4 @@
-included: [App, Tests]
+included: [App, Shared, LiveActivity, Tests]
 opt_in_rules:
   - force_unwrapping
   - implicitly_unwrapped_optional

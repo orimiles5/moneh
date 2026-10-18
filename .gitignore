@@ -18,3 +18,4 @@ DerivedData/
 # Tools
 graphify-out/
 ios/App/Info.plist
+ios/LiveActivity/Info.plist
