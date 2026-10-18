@@ -43,8 +43,18 @@ jobs:
         run: ./gradlew :core:iosSimulatorArm64Test :core:assembleMonehCoreReleaseXCFramework
       - name: Build and test app
         working-directory: ios
+        env:
+          TEST_RUNNER_SNAPSHOT_ARTIFACTS: ${{ runner.temp }}/snapshot-failures
         run: |
           xcodegen
           xcodebuild -project Moneh.xcodeproj -scheme Moneh \
             -destination 'platform=iOS Simulator,name=iPhone 17' test | tail -40
           exit ${PIPESTATUS[0]}
+      - name: Upload snapshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: snapshots
+          path: |
+            ios/Tests/__Snapshots__
+            ${{ runner.temp }}/snapshot-failures
