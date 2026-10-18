@@ -1,0 +1,4 @@
+# Overrides on top of detekt's default config.
+style:
+  MagicNumber:
+    excludes: ['**/commonTest/**', '**/jvmTest/**']
