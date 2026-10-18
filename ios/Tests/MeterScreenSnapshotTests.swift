@@ -48,6 +48,22 @@ final class MeterScreenSnapshotTests: XCTestCase {
         }
     }
 
+    func testOnboarding() {
+        for page in OnboardingView.Page.allCases {
+            assertAllVariants(.idle, testName: "testOnboarding-\(page)") { _ in
+                OnboardingView(startingAt: page) {}
+            }
+        }
+    }
+
+    func testSettings() {
+        let sources = [(
+            title: "צו פיקוח על מחירי מצרכים ושירותים (מחירי נסיעה במוניות), התשע\"ח-2018",
+            url: URL(filePath: "/")
+        )]
+        assertAllVariants(.idle) { _ in SettingsView(tariffId: "il-2026-04", tariffSources: sources) }
+    }
+
     func testRunningLandscape() {
         assertSnapshot(
             of: screen(Self.running, language: .hebrew),

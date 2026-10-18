@@ -62,6 +62,14 @@ final class MeterModel {
         phaseChanged()
     }
 
+    var tariffId: String {
+        meter.tariffId
+    }
+
+    var tariffSources: [(title: String, url: URL)] {
+        meter.tariffSources.compactMap { source in URL(string: source.url).map { (source.title, $0) } }
+    }
+
     var fixedPriceExtras: [String] {
         meter.fixedPriceExtras
     }

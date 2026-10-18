@@ -5,6 +5,7 @@ struct MeterView: View {
     let model: MeterModel
     @AppStorage("vatExempt") private var vatExempt = false
     @State private var showingExtras = false
+    @State private var showingSettings = false
 
     var body: some View {
         MeterScreen(
@@ -17,9 +18,13 @@ struct MeterView: View {
                 resume: model.resume,
                 stop: model.stop,
                 newTrip: model.settle,
-                showExtras: { showingExtras = true }
+                showExtras: { showingExtras = true },
+                showSettings: { showingSettings = true }
             )
         )
+        .sheet(isPresented: $showingSettings) {
+            SettingsView(tariffId: model.tariffId, tariffSources: model.tariffSources)
+        }
         .sheet(isPresented: $showingExtras) {
             ExtrasSheet(
                 fixedPriceExtras: model.fixedPriceExtras,
