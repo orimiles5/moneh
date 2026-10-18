@@ -20,8 +20,14 @@ kotlin {
     }
 
     sourceSets {
+        commonMain.dependencies {
+            implementation(libs.kotlinx.datetime)
+        }
         commonTest.dependencies {
             implementation(kotlin("test"))
+        }
+        jvmTest.dependencies {
+            implementation(libs.kosherjava)
         }
     }
 }
@@ -29,5 +35,5 @@ kotlin {
 detekt {
     buildUponDefaultConfig = true
     config.setFrom(rootProject.file("config/detekt/detekt.yml"))
-    source.setFrom("src/commonMain/kotlin", "src/commonTest/kotlin")
+    source.setFrom("src/commonMain/kotlin", "src/commonTest/kotlin", "src/jvmTest/kotlin")
 }
