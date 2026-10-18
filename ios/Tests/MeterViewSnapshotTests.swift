@@ -8,9 +8,12 @@ final class MeterViewSnapshotTests: XCTestCase {
     func testMeterView() {
         for language in [Language.hebrew, .english] {
             for style in [UIUserInterfaceStyle.light, .dark] {
-                let view = MeterView()
-                    .environment(\.locale, language.locale)
-                    .environment(\.layoutDirection, language.direction)
+                let view = MeterView(model: MeterModel(
+                    store: TripStore(directory: .temporaryDirectory.appending(path: UUID().uuidString)),
+                    feed: nil
+                ))
+                .environment(\.locale, language.locale)
+                .environment(\.layoutDirection, language.direction)
                 assertSnapshot(
                     of: view,
                     as: .image(
