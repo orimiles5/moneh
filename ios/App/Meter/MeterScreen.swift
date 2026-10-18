@@ -7,6 +7,7 @@ struct MeterActions {
     var stop: () -> Void = {}
     var newTrip: () -> Void = {}
     var showExtras: () -> Void = {}
+    var showSettings: () -> Void = {}
 }
 
 /// The main screen: one huge fare. Pure rendering of a reading, so every state can be snapshot-tested.
@@ -49,6 +50,15 @@ struct MeterScreen: View {
             HStack {
                 TariffChip(rateId: reading.phase == .idle ? currentRateId : reading.rateId)
                 Spacer()
+                if reading.phase == .idle || reading.phase == .settled {
+                    Button(action: actions.showSettings) {
+                        Image(systemName: "gearshape.fill")
+                            .font(.title2)
+                            .foregroundStyle(Palette.inkSecondary.color)
+                            .frame(width: minimumTouchTarget, height: minimumTouchTarget)
+                    }
+                    .accessibilityLabel(Text("settings.open"))
+                }
             }
             Spacer()
             fare

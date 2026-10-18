@@ -65,6 +65,11 @@ class Meter private constructor(
 
     val entries: List<TripLog.Entry> get() = log.entries
 
+    val tariffId: String get() = tariff.id
+
+    /** Legal sources the tariff was transcribed from, for display. */
+    val tariffSources: List<Tariff.Source> get() = tariff.sources
+
     /** Extras with a tariff price, for [addExtra]. */
     val fixedPriceExtras: List<String> get() =
         tariff.extras
