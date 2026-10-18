@@ -60,6 +60,20 @@ class Meter private constructor(
 
     val entries: List<TripLog.Entry> get() = log.entries
 
+    /** Extras with a tariff price, for [addExtra]. */
+    val fixedPriceExtras: List<String> get() =
+        tariff.extras
+            .filterValues { it.price != null }
+            .keys
+            .toList()
+
+    /** Extras charged at an amount entered at the time, for [addExtraAmount]. */
+    val enteredAmountExtras: List<String> get() =
+        tariff.extras
+            .filterValues { it.price == null }
+            .keys
+            .toList()
+
     fun hire(
         atMs: Long,
         vatExempt: Boolean,
