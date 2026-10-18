@@ -62,6 +62,14 @@ final class MeterModel {
         phaseChanged()
     }
 
+    var fixedPriceExtras: [String] {
+        meter.fixedPriceExtras
+    }
+
+    var enteredAmountExtras: [String] {
+        meter.enteredAmountExtras
+    }
+
     /// The tariff band in force now, for the idle screen.
     var currentRateId: String {
         meter.rateIdAt(nowMs: nowMs)

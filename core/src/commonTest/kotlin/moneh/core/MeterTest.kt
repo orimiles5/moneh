@@ -56,6 +56,14 @@ class MeterTest {
     }
 
     @Test
+    fun listsExtrasByKind() {
+        val meter = Meter("il-2026-04")
+        assertEquals(listOf("expressLane"), meter.enteredAmountExtras)
+        assertEquals(7, meter.fixedPriceExtras.size)
+        assertTrue("booking" in meter.fixedPriceExtras)
+    }
+
+    @Test
     fun clockSteppingBackwardsDoesNotCrash() {
         val meter = Meter("il-2026-04")
         meter.hire(t0, false)
