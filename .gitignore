@@ -1,0 +1,19 @@
+.DS_Store
+# Gradle / Kotlin
+.gradle/
+build/
+.kotlin/
+local.properties
+# Xcode
+ios/Moneh.xcodeproj/
+xcuserdata/
+DerivedData/
+*.xcuserstate
+# Secrets and signing
+*.p12
+*.mobileprovision
+*.keystore
+*.jks
+.env
+# Tools
+graphify-out/
