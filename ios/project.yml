@@ -14,13 +14,13 @@ settings:
     GCC_TREAT_WARNINGS_AS_ERRORS: YES
     LOCALIZATION_PREFERS_STRING_CATALOGS: YES
     SWIFT_EMIT_LOC_STRINGS: YES
-    DEVELOPMENT_TEAM: ""
 targets:
   Moneh:
     type: application
     platform: iOS
     sources:
       - App
+      - Shared
       - path: ../design/fonts
         buildPhase: resources
     info:
@@ -28,21 +28,43 @@ targets:
       properties:
         UIAppFonts: [Heebo-Regular.ttf, Heebo-Medium.ttf, Heebo-Bold.ttf, Heebo-Black.ttf]
         UIBackgroundModes: [location]
+        NSSupportsLiveActivities: true
         # Localized in App/InfoPlist.xcstrings.
         NSLocationWhenInUseUsageDescription: מונה משתמש במיקום כדי למדוד את מרחק הנסיעה בזמן שהמונה פועל. המיקום נשאר במכשיר.
     dependencies:
       # Built by ./gradlew :core:assembleMonehCoreReleaseXCFramework
       - framework: ../core/build/XCFrameworks/release/MonehCore.xcframework
         embed: false
+      - target: MonehLiveActivity
     settings:
       base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_IDENTIFIER)
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: $(APP_DISPLAY_NAME)
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
         TARGETED_DEVICE_FAMILY: "1"
-        CODE_SIGNING_ALLOWED: NO
+  MonehLiveActivity:
+    type: app-extension
+    platform: iOS
+    sources:
+      - LiveActivity
+      - Shared
+      - App/Localizable.xcstrings
+      - path: ../design/fonts
+        buildPhase: resources
+    info:
+      path: LiveActivity/Info.plist
+      properties:
+        CFBundleDisplayName: $(APP_DISPLAY_NAME)
+        UIAppFonts: [Heebo-Regular.ttf, Heebo-Medium.ttf, Heebo-Bold.ttf, Heebo-Black.ttf]
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_IDENTIFIER).LiveActivity
+        TARGETED_DEVICE_FAMILY: "1"
   MonehTests:
     type: bundle.unit-test
     platform: iOS
@@ -53,7 +75,6 @@ targets:
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
-        CODE_SIGNING_ALLOWED: NO
 packages:
   SnapshotTesting:
     url: https://github.com/pointfreeco/swift-snapshot-testing

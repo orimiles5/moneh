@@ -64,6 +64,20 @@ final class MeterScreenSnapshotTests: XCTestCase {
         assertAllVariants(.idle) { _ in SettingsView(tariffId: "il-2026-04", tariffSources: sources) }
     }
 
+    func testLiveActivity() {
+        let paused = MeterActivityAttributes.ContentState(
+            displayTotal: 4166, currencyCode: "ILS", rateId: "B", isRunning: false, elapsedSeconds: 872, updatedAt: .now
+        )
+        assertAllVariants(.idle, testName: "testLiveActivity-lockScreen", layout: .sizeThatFits) { _ in
+            MeterActivityView(state: paused).frame(width: 360).background(Palette.background.color)
+        }
+        var running = paused
+        running.isRunning = true
+        assertAllVariants(.idle, testName: "testLiveActivity-carPlay", layout: .sizeThatFits) { _ in
+            MeterActivitySmallView(state: running).frame(width: 180, height: 80).background(Palette.background.color)
+        }
+    }
+
     func testRunningLandscape() {
         assertSnapshot(
             of: screen(Self.running, language: .hebrew),
@@ -96,6 +110,7 @@ final class MeterScreenSnapshotTests: XCTestCase {
     private func assertAllVariants(
         _ reading: FareReading,
         testName: String = #function,
+        layout: SwiftUISnapshotLayout = .device(config: .iPhone13),
         @ViewBuilder content: (FareReading) -> some View
     ) {
         for language in [Language.hebrew, .english] {
@@ -103,7 +118,7 @@ final class MeterScreenSnapshotTests: XCTestCase {
                 assertSnapshot(
                     of: localized(content(reading), language),
                     as: .image(
-                        layout: .device(config: .iPhone13),
+                        layout: layout,
                         traits: UITraitCollection(userInterfaceStyle: style)
                     ),
                     named: "\(language)-\(style == .dark ? "dark" : "light")",
