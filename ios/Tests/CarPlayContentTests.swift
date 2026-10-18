@@ -13,7 +13,9 @@ struct CarPlayContentTests {
         reading.elapsed = .seconds(872)
         reading.distanceMetres = 6830
         let content = CarPlayContent(reading: reading, currentRateId: "A", locale: english)
-        #expect(content.items.map(\.detail) == ["₪41.66", "Tariff B", "14:32", "6.8 km"])
+        // Formatters may use non-breaking spaces; compare with plain ones.
+        let details = content.items.map { $0.detail.replacing(/\s/, with: " ") }
+        #expect(details == ["₪41.66", "Tariff B", "14:32", "6.8 km"])
         #expect(content.actions == [.pause, .stop])
     }
 

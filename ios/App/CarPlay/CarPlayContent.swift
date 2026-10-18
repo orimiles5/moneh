@@ -41,8 +41,10 @@ struct CarPlayContent: Equatable {
             Item(
                 title: text("meter.distance"),
                 detail: Measurement(value: Double(reading.distanceMetres) / 1000, unit: UnitLength.kilometers)
+                    // As provided: a per-kilometre tariff shows kilometres, never miles.
                     .formatted(.measurement(
                         width: .abbreviated,
+                        usage: .asProvided,
                         numberFormatStyle: .number.precision(.fractionLength(1))
                     ).locale(locale))
             ),
