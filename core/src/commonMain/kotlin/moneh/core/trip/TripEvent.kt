@@ -6,9 +6,11 @@ import kotlin.time.Instant
 sealed interface TripEvent {
     val at: Instant
 
+    /** [vatExempt] marks a trip in a zone without VAT, such as Eilat; recorded so the fare is reproducible. */
     data class Hired(
         override val at: Instant,
         val tariffVersion: String,
+        val vatExempt: Boolean = false,
     ) : TripEvent
 
     /** Distance travelled since the previous [Moved], in metres, as measured by the distance pipeline. */

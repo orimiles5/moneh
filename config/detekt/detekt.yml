@@ -5,3 +5,6 @@ style:
     excludes: ['**/commonTest/**', '**/jvmTest/**', '**/calendar/**']
   MaxLineLength:
     maxLineLength: 140 # match ktlint_official
+complexity:
+  TooManyFunctions:
+    ignorePrivate: true # count the API surface, not private helpers
