@@ -7,6 +7,7 @@ import moneh.core.tariff.Tariffs
 import moneh.core.trip.TripState
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 
@@ -110,6 +111,12 @@ class FareEngineTest {
                 .stop(at("2026-10-18T10:10"))
                 .addExtra(at("2026-10-18T10:10"), "expressLane", amountMinorUnits = 1200)
         assertEquals(4167 + 1200, total(trip))
+    }
+
+    @Test
+    fun negativeTollIsRejected() {
+        val trip = hire("2026-10-18T10:00").stop(at("2026-10-18T10:10")).addExtra(at("2026-10-18T10:10"), "expressLane", -500)
+        assertFailsWith<IllegalArgumentException> { total(trip) }
     }
 
     @Test
