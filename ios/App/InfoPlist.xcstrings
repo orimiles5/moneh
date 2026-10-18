@@ -1,0 +1,18 @@
+{
+  "sourceLanguage" : "he",
+  "strings" : {
+    "CFBundleDisplayName" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Moneh" } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "מונה" } }
+      }
+    },
+    "NSLocationWhenInUseUsageDescription" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Moneh uses your location to measure the trip distance while the meter is running. Your location stays on this device." } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "מונה משתמש במיקום כדי למדוד את מרחק הנסיעה בזמן שהמונה פועל. המיקום נשאר במכשיר." } }
+      }
+    }
+  },
+  "version" : "1.0"
+}

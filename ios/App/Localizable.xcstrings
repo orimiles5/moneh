@@ -1,12 +1,70 @@
 {
-  "sourceLanguage" : "he",
-  "strings" : {
-    "meter.idle.title" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Ready" } },
-        "he" : { "stringUnit" : { "state" : "translated", "value" : "מוכן" } }
+  "sourceLanguage": "he",
+  "strings": {
+    "meter.idle.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מוכן"
+          }
+        }
+      }
+    },
+    "meter.newTrip": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New trip"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "נסיעה חדשה"
+          }
+        }
+      }
+    },
+    "meter.start": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start trip"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "התחלת נסיעה"
+          }
+        }
+      }
+    },
+    "meter.stop": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stop"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "עצירה"
+          }
+        }
       }
     }
   },
-  "version" : "1.0"
+  "version": "1.0"
 }

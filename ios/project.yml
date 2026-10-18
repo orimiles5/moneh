@@ -27,6 +27,9 @@ targets:
       path: App/Info.plist
       properties:
         UIAppFonts: [Heebo-Regular.ttf, Heebo-Medium.ttf, Heebo-Bold.ttf, Heebo-Black.ttf]
+        UIBackgroundModes: [location]
+        # Localized in App/InfoPlist.xcstrings.
+        NSLocationWhenInUseUsageDescription: מונה משתמש במיקום כדי למדוד את מרחק הנסיעה בזמן שהמונה פועל. המיקום נשאר במכשיר.
     dependencies:
       # Built by ./gradlew :core:assembleMonehCoreReleaseXCFramework
       - framework: ../core/build/XCFrameworks/release/MonehCore.xcframework
