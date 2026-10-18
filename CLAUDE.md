@@ -11,7 +11,7 @@ Taxi meter on the driver's phone; running fare on the car screen. Israel first, 
 ## Rules
 - Money is `Long` agorot. Never floating point for money.
 - Tariffs are versioned JSON data with source URL + effective dates. Never invent tariff values; unknowns go to `docs/open-questions.md`.
-- Israeli 2026 order prices are VAT-exclusive (open question Q1 tracks confirmation).
+- Israeli fare rules and their legal sources: `docs/tariffs-il.md`. Prices in the order are VAT-exclusive; time and distance charges add up.
 - No user-facing string literals in code: String Catalogs (iOS), string resources (Android). Hebrew + English.
 - Leading/trailing only, never left/right. Fare digits are tabular (Heebo's digits are tabular by default).
 - Swift 6 language mode, strict concurrency. No force unwraps / `!!` outside tests.
