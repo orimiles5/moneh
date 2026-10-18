@@ -30,3 +30,4 @@ Taxi meter on the driver's phone; running fare on the car screen. Israel first, 
 - XCFramework: `./gradlew :core:assembleMonehCoreReleaseXCFramework`
 - iOS project: `cd ios && xcodegen`; build/test: `xcodebuild -project ios/Moneh.xcodeproj -scheme Moneh -destination 'platform=iOS Simulator,name=iPhone 17' test`
 - iOS lint: `swiftlint --strict` and `swiftformat --lint ios`
+- Snapshot references are recorded on CI (`macos-26` runner); local runs on another iOS version will mismatch. To re-record, delete the PNGs, push, and download the `snapshots` artifact from the failed run.
