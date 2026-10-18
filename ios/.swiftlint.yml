@@ -5,3 +5,6 @@ opt_in_rules:
   - empty_count
   - first_where
   - sorted_imports
+# SwiftFormat owns formatting.
+disabled_rules:
+  - trailing_comma
