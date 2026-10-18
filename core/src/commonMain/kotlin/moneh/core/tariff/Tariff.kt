@@ -7,6 +7,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import moneh.core.calendar.DayType
 import moneh.core.calendar.IsraeliRestDays
 import moneh.core.calendar.dayType
@@ -72,7 +73,8 @@ data class Tariff(
         val price: Long? = null,
     )
 
-    private val zone get() = TimeZone.of(timeZone)
+    @Transient
+    private val zone = TimeZone.of(timeZone)
 
     private val isRestDay: (LocalDate) -> Boolean
         get() =
@@ -85,7 +87,6 @@ data class Tariff(
         require(vatBasisPoints in 0..BASIS_POINTS_PER_WHOLE) { "VAT out of range: $vatBasisPoints" }
         require(effectiveUntil == null || effectiveUntil >= effectiveFrom) { "Tariff ends before it starts" }
         require(sources.isNotEmpty()) { "A tariff must cite its legal source" }
-        TimeZone.of(timeZone)
         rates.forEach { (id, rate) ->
             require(rate.startingFare >= 0 && rate.perMinute >= 0) { "Negative price in rate $id" }
             require(rate.perKm.firstOrNull()?.fromKm == 0) { "Rate $id must have a distance tier from 0 km" }
