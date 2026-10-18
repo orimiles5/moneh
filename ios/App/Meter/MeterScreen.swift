@@ -23,7 +23,9 @@ struct MeterScreen: View {
 
     var body: some View {
         Group {
-            if verticalSizeClass == .compact {
+            if reading.phase == .stopped {
+                ReceiptSlot(reading: reading, onNewTrip: actions.newTrip)
+            } else if verticalSizeClass == .compact {
                 // Landscape, as on a dashboard mount: fare on the leading side, controls on the trailing side.
                 HStack(spacing: Spacing.xLarge) {
                     fareColumn
@@ -108,7 +110,7 @@ struct MeterScreen: View {
                 }
                 PillButton("meter.stop", style: .danger, action: actions.stop)
             case .stopped:
-                PillButton("meter.newTrip", style: .accent, action: actions.newTrip)
+                EmptyView() // The receipt takes over the whole screen.
             }
         }
     }

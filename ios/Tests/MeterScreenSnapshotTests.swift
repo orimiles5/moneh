@@ -29,6 +29,25 @@ final class MeterScreenSnapshotTests: XCTestCase {
         assertAllVariants(reading)
     }
 
+    func testReceipt() {
+        var reading = Self.running
+        reading.phase = .stopped
+        reading.startingFare = 1056
+        reading.timeCharge = 2877
+        reading.distanceCharge = 1352
+        reading.extras = 490
+        reading.vat = 1042
+        reading.passThrough = 1200
+        reading.total = 8017
+        reading.startedAt = Date(timeIntervalSince1970: 1_792_317_600)
+        reading.logHead = "f9fbfa80ff0bb52867f60476cb2b24107e37acd0054d95951f23ee16e4f09e5b"
+        assertAllVariants(reading) { reading in
+            ReceiptSlot(reading: reading, onNewTrip: {}, alreadyPrinted: true)
+                .padding(Spacing.large)
+                .background(Palette.background.color)
+        }
+    }
+
     func testRunningLandscape() {
         assertSnapshot(
             of: screen(Self.running, language: .hebrew),
@@ -40,16 +59,33 @@ final class MeterScreenSnapshotTests: XCTestCase {
     }
 
     private func screen(_ reading: FareReading, language: Language) -> some View {
-        MeterScreen(reading: reading, currentRateId: "A", locationProblem: nil, actions: MeterActions())
+        localized(
+            MeterScreen(reading: reading, currentRateId: "A", locationProblem: nil, actions: MeterActions()),
+            language
+        )
+    }
+
+    private func localized(_ view: some View, _ language: Language) -> some View {
+        view
             .environment(\.locale, language.locale)
             .environment(\.layoutDirection, language.direction)
     }
 
     private func assertAllVariants(_ reading: FareReading, testName: String = #function) {
+        assertAllVariants(reading, testName: testName) { reading in
+            MeterScreen(reading: reading, currentRateId: "A", locationProblem: nil, actions: MeterActions())
+        }
+    }
+
+    private func assertAllVariants(
+        _ reading: FareReading,
+        testName: String = #function,
+        @ViewBuilder content: (FareReading) -> some View
+    ) {
         for language in [Language.hebrew, .english] {
             for style in [UIUserInterfaceStyle.light, .dark] {
                 assertSnapshot(
-                    of: screen(reading, language: language),
+                    of: localized(content(reading), language),
                     as: .image(
                         layout: .device(config: .iPhone13),
                         traits: UITraitCollection(userInterfaceStyle: style)

@@ -129,7 +129,6 @@ class FareEngineTest {
                 .addExtra(at("2026-10-18T21:10"), "expressLane", amountMinorUnits = 777)
         val fare = computeFare(tariff, trip.events, at("2026-10-18T21:10"))
         val parts = fare.startingFare + fare.timeCharge + fare.distanceCharge + fare.extras + fare.vat + fare.passThrough
-        // Line items are rounded individually, so they may differ from the exactly computed total by at most one agora each.
-        assertEquals(fare.total.minorUnits.toDouble(), parts.minorUnits.toDouble(), absoluteTolerance = 4.0)
+        assertEquals(fare.total, parts)
     }
 }

@@ -69,6 +69,19 @@ class FarePropertiesTest {
     }
 
     @Test
+    fun breakdownAlwaysAddsUpAndVatStaysWithinAFewAgorotOfTheRate() {
+        val random = Random(11)
+        repeat(300) {
+            val trip = randomTrip(random)
+            val fare = computeFare(tariff, trip.events, trip.events.last().at)
+            val lines = fare.startingFare + fare.timeCharge + fare.distanceCharge + fare.extras
+            assertEquals(fare.total, lines + fare.vat + fare.passThrough)
+            val exactVat = lines.minorUnits * tariff.vatBasisPoints / 10_000.0
+            assertTrue(kotlin.math.abs(fare.vat.minorUnits - exactVat) <= 4, "VAT ${fare.vat} vs $exactVat")
+        }
+    }
+
+    @Test
     fun nothingIsChargedAfterTheMeterStops() {
         val random = Random(3)
         repeat(100) {
