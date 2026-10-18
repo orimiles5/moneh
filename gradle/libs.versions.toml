@@ -4,9 +4,11 @@ ktlint-gradle = "14.2.0"
 detekt = "2.0.0-alpha.6"
 kotlinx-datetime = "0.8.0"
 kosherjava = "2.5.0"
+kotlincrypto-hash = "0.8.0"
 
 [libraries]
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
+kotlincrypto-sha2 = { module = "org.kotlincrypto.hash:sha2", version.ref = "kotlincrypto-hash" }
 kosherjava = { module = "com.kosherjava:zmanim", version.ref = "kosherjava" }
 
 [plugins]
