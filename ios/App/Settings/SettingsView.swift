@@ -38,6 +38,8 @@ struct SettingsView: View {
             }
             .font(Typography.body)
             .tint(Palette.accent.color)
+            .scrollContentBackground(.hidden)
+            .background(Palette.background.color)
             .navigationTitle("settings.title")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
