@@ -19,7 +19,14 @@ targets:
   Moneh:
     type: application
     platform: iOS
-    sources: [App]
+    sources:
+      - App
+      - path: ../design/fonts
+        buildPhase: resources
+    info:
+      path: App/Info.plist
+      properties:
+        UIAppFonts: [Heebo-Regular.ttf, Heebo-Medium.ttf, Heebo-Bold.ttf, Heebo-Black.ttf]
     dependencies:
       # Built by ./gradlew :core:assembleMonehCoreReleaseXCFramework
       - framework: ../core/build/XCFrameworks/release/MonehCore.xcframework
