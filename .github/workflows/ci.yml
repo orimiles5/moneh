@@ -50,6 +50,12 @@ jobs:
           xcodebuild -project Moneh.xcodeproj -scheme Moneh \
             -destination 'platform=iOS Simulator,name=iPhone 17' CODE_SIGNING_ALLOWED=NO test | tail -40
           exit ${PIPESTATUS[0]}
+      - name: Build with the CarPlay scene enabled
+        working-directory: ios
+        run: |
+          xcodebuild -project Moneh.xcodeproj -scheme Moneh -destination 'platform=iOS Simulator,name=iPhone 17' \
+            CARPLAY_ENABLED=YES CODE_SIGNING_ALLOWED=NO build | tail -5
+          exit ${PIPESTATUS[0]}
       - name: Upload snapshots
         if: failure()
         uses: actions/upload-artifact@v7

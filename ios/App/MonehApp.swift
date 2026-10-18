@@ -4,7 +4,8 @@ import SwiftUI
 struct MonehApp: App {
     @AppStorage("appearance") private var appearance = AppearancePreference.system
     @AppStorage("onboarded") private var onboarded = false
-    @State private var model = MeterModel()
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    @State private var model = MeterModel.shared
 
     var body: some Scene {
         WindowGroup {

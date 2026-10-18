@@ -1,6 +1,40 @@
 {
   "sourceLanguage": "he",
   "strings": {
+    "carplay.fare": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fare"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מחיר"
+          }
+        }
+      }
+    },
+    "carplay.tariff": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tariff"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "תעריף"
+          }
+        }
+      }
+    },
     "common.done": {
       "extractionState": "manual",
       "localizations": {

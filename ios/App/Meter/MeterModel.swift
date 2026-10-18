@@ -11,6 +11,9 @@ final class MeterModel {
     // ponytail: one bundled tariff; pick by effective date once the next one ships (before 1.4.2027).
     static let tariffId = "il-2026-04"
 
+    /// The one live meter, shared by the phone UI and the CarPlay scene.
+    static let shared = MeterModel()
+
     private(set) var reading = FareReading.idle
     private(set) var locationProblem: LocationFeed.Problem?
 
