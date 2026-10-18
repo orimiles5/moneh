@@ -22,6 +22,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(libs.kotlinx.datetime)
+            implementation(libs.kotlincrypto.sha2)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
