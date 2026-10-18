@@ -1,4 +1,7 @@
 # Overrides on top of detekt's default config.
 style:
   MagicNumber:
-    excludes: ['**/commonTest/**', '**/jvmTest/**']
+    # Calendar code transcribes published algorithms; named constants would obscure them.
+    excludes: ['**/commonTest/**', '**/jvmTest/**', '**/calendar/**']
+  MaxLineLength:
+    maxLineLength: 140 # match ktlint_official
