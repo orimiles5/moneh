@@ -1,9 +1,11 @@
 import SwiftUI
 
 struct MeterView: View {
+    @Environment(\.locale) private var locale
+
     var body: some View {
         VStack(spacing: Spacing.medium) {
-            Text(0, format: .number.precision(.fractionLength(2)))
+            Text(FareFormat.string(minorUnits: 0, currencyCode: "ILS", locale: locale))
                 .font(Typography.fare)
                 .foregroundStyle(Palette.ink.color)
             Text("meter.idle.title")

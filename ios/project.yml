@@ -46,10 +46,15 @@ targets:
     sources: [Tests]
     dependencies:
       - target: Moneh
+      - package: SnapshotTesting
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
         CODE_SIGNING_ALLOWED: NO
+packages:
+  SnapshotTesting:
+    url: https://github.com/pointfreeco/swift-snapshot-testing
+    exactVersion: 1.19.5
 schemes:
   Moneh:
     build:
