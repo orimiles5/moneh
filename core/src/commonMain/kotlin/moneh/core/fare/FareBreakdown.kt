@@ -5,7 +5,7 @@ import kotlin.time.Duration
 
 data class FareBreakdown(
     val tariffId: String,
-    /** Line items exclude VAT and are each rounded half-up for display. */
+    /** Line items exclude VAT and are each rounded half-up; with [vat] and [passThrough] they sum exactly to [total]. */
     val startingFare: Money,
     val timeCharge: Money,
     val distanceCharge: Money,

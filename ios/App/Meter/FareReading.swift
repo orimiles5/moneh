@@ -21,12 +21,15 @@ struct FareReading: Equatable {
     var elapsed: Duration
     var distanceMetres: Int64
     var vatExempt: Bool
+    var vatBasisPoints: Int32
+    var startedAt: Date?
+    var stoppedAt: Date?
     var logHead: String
 
     static let idle = FareReading(
         phase: .idle, currencyCode: "ILS", rateId: "A", displayTotal: 0, total: 0, startingFare: 0, timeCharge: 0,
         distanceCharge: 0, extras: 0, vat: 0, passThrough: 0, elapsed: .zero, distanceMetres: 0, vatExempt: false,
-        logHead: ""
+        vatBasisPoints: 1800, startedAt: nil, stoppedAt: nil, logHead: ""
     )
 }
 
@@ -47,8 +50,19 @@ extension FareReading {
             elapsed: .seconds(reading.chargedSeconds),
             distanceMetres: reading.distanceMetres,
             vatExempt: reading.vatExempt,
+            vatBasisPoints: reading.vatBasisPoints,
+            startedAt: Date(epochMs: reading.startedAtMs),
+            stoppedAt: Date(epochMs: reading.stoppedAtMs),
             logHead: reading.logHead
         )
+    }
+}
+
+private extension Date {
+    /// The core reports 0 for "not yet".
+    init?(epochMs: Int64) {
+        guard epochMs > 0 else { return nil }
+        self.init(timeIntervalSince1970: TimeInterval(epochMs) / 1000)
     }
 }
 

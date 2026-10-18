@@ -30,6 +30,11 @@ data class MeterReading(
     val chargedSeconds: Long,
     val distanceMetres: Long,
     val vatExempt: Boolean,
+    /** VAT rate applied, in basis points (1800 = 18%); 0 when exempt. */
+    val vatBasisPoints: Int,
+    /** Epoch milliseconds; 0 until the trip starts or stops. */
+    val startedAtMs: Long,
+    val stoppedAtMs: Long,
     val logHead: String,
 )
 
@@ -123,26 +128,55 @@ class Meter private constructor(
     fun rateIdAt(nowMs: Long): String = tariff.rateIdAt(Instant.fromEpochMilliseconds(nowMs))
 
     fun reading(nowMs: Long): MeterReading {
-        val hired = state.events.firstOrNull() as? TripEvent.Hired
-        val fare = hired?.let { computeFare(tariff, state.events, maxOf(at(nowMs), state.events.last().at)) }
+        val hired = state.events.firstOrNull() as? TripEvent.Hired ?: return idleReading(nowMs)
+        val fare = computeFare(tariff, state.events, maxOf(at(nowMs), state.events.last().at))
         return MeterReading(
             phase = phase,
             currency = tariff.currency,
             rateId = rateIdAt(nowMs),
-            displayTotal = fare?.displayTotal?.minorUnits ?: 0,
-            total = fare?.total?.minorUnits ?: 0,
-            startingFare = fare?.startingFare?.minorUnits ?: 0,
-            timeCharge = fare?.timeCharge?.minorUnits ?: 0,
-            distanceCharge = fare?.distanceCharge?.minorUnits ?: 0,
-            extras = fare?.extras?.minorUnits ?: 0,
-            vat = fare?.vat?.minorUnits ?: 0,
-            passThrough = fare?.passThrough?.minorUnits ?: 0,
-            chargedSeconds = fare?.chargedTime?.inWholeSeconds ?: 0,
-            distanceMetres = fare?.distanceMetres ?: 0,
-            vatExempt = hired?.vatExempt ?: false,
+            displayTotal = fare.displayTotal.minorUnits,
+            total = fare.total.minorUnits,
+            startingFare = fare.startingFare.minorUnits,
+            timeCharge = fare.timeCharge.minorUnits,
+            distanceCharge = fare.distanceCharge.minorUnits,
+            extras = fare.extras.minorUnits,
+            vat = fare.vat.minorUnits,
+            passThrough = fare.passThrough.minorUnits,
+            chargedSeconds = fare.chargedTime.inWholeSeconds,
+            distanceMetres = fare.distanceMetres,
+            vatExempt = hired.vatExempt,
+            vatBasisPoints = if (hired.vatExempt) 0 else tariff.vatBasisPoints,
+            startedAtMs = hired.at.toEpochMilliseconds(),
+            stoppedAtMs =
+                state.events
+                    .lastOrNull { it is TripEvent.Stopped }
+                    ?.at
+                    ?.toEpochMilliseconds() ?: 0,
             logHead = log.head,
         )
     }
+
+    private fun idleReading(nowMs: Long) =
+        MeterReading(
+            phase = phase,
+            currency = tariff.currency,
+            rateId = rateIdAt(nowMs),
+            displayTotal = 0,
+            total = 0,
+            startingFare = 0,
+            timeCharge = 0,
+            distanceCharge = 0,
+            extras = 0,
+            vat = 0,
+            passThrough = 0,
+            chargedSeconds = 0,
+            distanceMetres = 0,
+            vatExempt = false,
+            vatBasisPoints = tariff.vatBasisPoints,
+            startedAtMs = 0,
+            stoppedAtMs = 0,
+            logHead = log.head,
+        )
 
     private fun addExtra(
         atMs: Long,

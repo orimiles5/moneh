@@ -35,14 +35,19 @@ fun computeFare(
     val numerator = subtotal * (BASIS_POINTS_PER_WHOLE + vatBasisPoints) + passThrough * UNITS * BASIS_POINTS_PER_WHOLE
     val denominator = UNITS * BASIS_POINTS_PER_WHOLE
     val total = roundHalfUp(numerator, denominator)
+    val startingLine = roundHalfUp(starting, UNITS)
+    val timeLine = roundHalfUp(time, UNITS)
+    val distanceLine = roundHalfUp(distance, UNITS)
+    val extrasLine = roundHalfUp(extras, UNITS)
 
     return FareBreakdown(
         tariffId = tariff.id,
-        startingFare = Money(roundHalfUp(starting, UNITS)),
-        timeCharge = Money(roundHalfUp(time, UNITS)),
-        distanceCharge = Money(roundHalfUp(distance, UNITS)),
-        extras = Money(roundHalfUp(extras, UNITS)),
-        vat = Money(total - passThrough - roundHalfUp(subtotal, UNITS)),
+        startingFare = Money(startingLine),
+        timeCharge = Money(timeLine),
+        distanceCharge = Money(distanceLine),
+        extras = Money(extrasLine),
+        // Absorbs the line items' rounding (at most a few agorot) so a printed breakdown always adds up to the total.
+        vat = Money(total - passThrough - startingLine - timeLine - distanceLine - extrasLine),
         passThrough = Money(passThrough),
         total = Money(total),
         displayTotal = Money(numerator / denominator),
