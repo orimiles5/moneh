@@ -101,4 +101,21 @@ class MeterTest {
         assertNull(Meter.restore(tampered))
         assertNull(Meter.restore(emptyList<TripLog.Entry>()))
     }
+
+    @Test
+    fun pricesAndCountsExtras() {
+        val meter = Meter("il-2026-04")
+        // Booking is 4.90 before VAT: 5.782 rounds to 5.78; Eilat trips pay 4.90.
+        assertEquals(578, meter.extraPassengerPrice("booking"))
+        assertNull(meter.extraPassengerPrice("expressLane"))
+        assertNull(meter.extraPassengerPrice("nope"))
+        assertTrue(meter.hire(t0, vatExempt = true))
+        assertEquals(490, meter.extraPassengerPrice("booking"))
+        assertEquals(0, meter.extraCount("booking"))
+        meter.addExtra(t0 + minute, "booking")
+        meter.addExtra(t0 + minute, "booking")
+        meter.addExtraAmount(t0 + minute, "expressLane", 1_000)
+        assertEquals(2, meter.extraCount("booking"))
+        assertEquals(1, meter.extraCount("expressLane"))
+    }
 }

@@ -92,13 +92,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Booking"
+            "value": "Booked to pickup address"
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "הזמנת מונית"
+            "value": "הזמנה למקום האיסוף"
           }
         }
       }
@@ -218,6 +218,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "סכום"
+          }
+        }
+      }
+    },
+    "extras.amount.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter the toll shown on the sign. It is added as is, without VAT."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "יש להזין את האגרה שמופיעה בשלט. היא מתווספת כמו שהיא, ללא מע״מ."
+          }
+        }
+      }
+    },
+    "extras.count %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quantity %lld"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "כמות %lld"
+          }
+        }
+      }
+    },
+    "extras.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to add to the fare. Prices are what the passenger pays."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הקשה מוסיפה לתשלום. המחירים הם מה שהנוסע משלם."
+          }
+        }
+      }
+    },
+    "extras.times %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "×%lld"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "×%lld"
           }
         }
       }
@@ -435,6 +503,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "עצירה"
+          }
+        }
+      }
+    },
+    "meter.stop.confirm": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End this trip?"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "לסיים את הנסיעה?"
+          }
+        }
+      }
+    },
+    "meter.stop.confirm.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The meter stops counting and the trip summary is printed."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "המונה יפסיק למדוד ויודפס סיכום הנסיעה."
+          }
+        }
+      }
+    },
+    "meter.stop.end": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End trip"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "סיום נסיעה"
           }
         }
       }
