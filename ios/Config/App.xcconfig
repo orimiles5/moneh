@@ -2,7 +2,7 @@
 APP_DISPLAY_NAME = Moneh
 APP_BUNDLE_IDENTIFIER = com.orimiles.moneh
 // Your Apple Developer Team ID, for running on a device. Empty builds for the Simulator only.
-DEVELOPMENT_TEAM =
+DEVELOPMENT_TEAM = B8M56Q74U3
 
 // CarPlay Driving Task scene. Leave NO until Apple grants the entitlement (docs/carplay-entitlement-request.md).
 CARPLAY_ENABLED = NO
