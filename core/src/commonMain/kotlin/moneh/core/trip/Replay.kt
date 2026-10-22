@@ -20,6 +20,7 @@ private fun TripState.Hired.apply(event: TripEvent): TripState? =
         is TripEvent.Paused -> pause(event.at)
         is TripEvent.Stopped -> stop(event.at)
         is TripEvent.ExtraAdded -> addExtra(event.at, event.extraId, event.amountMinorUnits)
+        is TripEvent.ExtraRemoved -> removeExtra(event.at, event.extraId)
         else -> null
     }
 
@@ -28,6 +29,7 @@ private fun TripState.Paused.apply(event: TripEvent): TripState? =
         is TripEvent.Resumed -> resume(event.at)
         is TripEvent.Stopped -> stop(event.at)
         is TripEvent.ExtraAdded -> addExtra(event.at, event.extraId, event.amountMinorUnits)
+        is TripEvent.ExtraRemoved -> removeExtra(event.at, event.extraId)
         else -> null
     }
 
@@ -35,5 +37,6 @@ private fun TripState.Stopped.apply(event: TripEvent): TripState? =
     when (event) {
         is TripEvent.Settled -> settle(event.at)
         is TripEvent.ExtraAdded -> addExtra(event.at, event.extraId, event.amountMinorUnits)
+        is TripEvent.ExtraRemoved -> removeExtra(event.at, event.extraId)
         else -> null
     }

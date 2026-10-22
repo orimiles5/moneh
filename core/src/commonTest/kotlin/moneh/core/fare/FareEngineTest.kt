@@ -114,6 +114,21 @@ class FareEngineTest {
     }
 
     @Test
+    fun removingAnExtraCancelsItsLatestCharge() {
+        val trip =
+            hire("2026-10-18T10:00")
+                .move(at("2026-10-18T10:10"), 5_000)
+                .stop(at("2026-10-18T10:10"))
+                .addExtra(at("2026-10-18T10:10"), "expressLane", amountMinorUnits = 1200)
+                .addExtra(at("2026-10-18T10:10"), "expressLane", amountMinorUnits = 900)
+                .addExtra(at("2026-10-18T10:10"), "booking")
+                .removeExtra(at("2026-10-18T10:11"), "expressLane")
+                .removeExtra(at("2026-10-18T10:11"), "booking")
+        assertEquals(4167 + 1200, total(trip))
+        assertFailsWith<IllegalArgumentException> { trip.removeExtra(at("2026-10-18T10:11"), "booking") }
+    }
+
+    @Test
     fun negativeTollIsRejected() {
         val trip = hire("2026-10-18T10:00").stop(at("2026-10-18T10:10")).addExtra(at("2026-10-18T10:10"), "expressLane", -500)
         assertFailsWith<IllegalArgumentException> { total(trip) }

@@ -117,5 +117,12 @@ class MeterTest {
         meter.addExtraAmount(t0 + minute, "expressLane", 1_000)
         assertEquals(2, meter.extraCount("booking"))
         assertEquals(1, meter.extraCount("expressLane"))
+        val withBoth = meter.reading(t0 + minute).total
+        assertTrue(meter.removeExtra(t0 + minute, "booking"))
+        assertEquals(1, meter.extraCount("booking"))
+        assertEquals(withBoth - 490, meter.reading(t0 + minute).total)
+        assertTrue(meter.removeExtra(t0 + minute, "booking"))
+        assertFalse(meter.removeExtra(t0 + minute, "booking"))
+        assertEquals(0, Meter.restore(meter.entries)?.extraCount("booking"))
     }
 }

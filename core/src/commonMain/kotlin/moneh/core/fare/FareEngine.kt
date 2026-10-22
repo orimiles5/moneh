@@ -69,6 +69,14 @@ private class Meter(
     var metres = 0L
     private var runningSince: Instant? = null
 
+    /** Per extra, the charges in force, latest last, so a removal cancels exactly what the latest addition charged. */
+    private val charged = mutableMapOf<String, ArrayDeque<Charge>>()
+
+    private class Charge(
+        val exact: Long,
+        val passThrough: Long,
+    )
+
     fun record(event: TripEvent) {
         when (event) {
             is TripEvent.Hired, is TripEvent.Resumed -> runningSince = event.at
@@ -78,6 +86,7 @@ private class Meter(
                 metres += event.metres
             }
             is TripEvent.ExtraAdded -> addExtra(event)
+            is TripEvent.ExtraRemoved -> removeExtra(event)
             is TripEvent.Settled -> Unit
         }
     }
@@ -92,14 +101,24 @@ private class Meter(
 
     private fun addExtra(event: TripEvent.ExtraAdded) {
         val extra = tariff.extras[event.extraId] ?: throw IllegalArgumentException("Unknown extra ${event.extraId}")
-        when (val price = extra.price) {
-            null -> {
-                val amount = requireNotNull(event.amountMinorUnits) { "Extra ${event.extraId} needs an amount" }
-                require(amount >= 0) { "Extra ${event.extraId} cannot be negative" }
-                passThrough += amount
+        val charge =
+            when (val price = extra.price) {
+                null -> {
+                    val amount = requireNotNull(event.amountMinorUnits) { "Extra ${event.extraId} needs an amount" }
+                    require(amount >= 0) { "Extra ${event.extraId} cannot be negative" }
+                    Charge(exact = 0, passThrough = amount)
+                }
+                else -> Charge(exact = price * UNITS, passThrough = 0)
             }
-            else -> extras += price * UNITS
-        }
+        charged.getOrPut(event.extraId) { ArrayDeque() }.addLast(charge)
+        extras += charge.exact
+        passThrough += charge.passThrough
+    }
+
+    private fun removeExtra(event: TripEvent.ExtraRemoved) {
+        val charge = requireNotNull(charged[event.extraId]?.removeLastOrNull()) { "No ${event.extraId} to remove" }
+        extras -= charge.exact
+        passThrough -= charge.passThrough
     }
 }
 

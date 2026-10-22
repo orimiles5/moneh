@@ -63,6 +63,10 @@ final class MeterModel {
         apply { $0.addExtraAmount(atMs: $1, extraId: id, amountMinorUnits: amountMinorUnits) }
     }
 
+    func removeExtra(_ id: String) {
+        apply { $0.removeExtra(atMs: $1, extraId: id) }
+    }
+
     /// Ends the trip and gets ready for the next one.
     func settle() {
         guard meter.settle(atMs: nowMs) else { return }

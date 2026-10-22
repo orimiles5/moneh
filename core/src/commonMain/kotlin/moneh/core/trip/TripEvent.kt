@@ -34,6 +34,12 @@ sealed interface TripEvent {
         val amountMinorUnits: Long? = null,
     ) : TripEvent
 
+    /** Cancels the latest addition of [extraId] still in force. The log is append-only, so a mistake is corrected, not erased. */
+    data class ExtraRemoved(
+        override val at: Instant,
+        val extraId: String,
+    ) : TripEvent
+
     data class Stopped(
         override val at: Instant,
     ) : TripEvent
