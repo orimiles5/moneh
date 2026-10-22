@@ -6,6 +6,7 @@ struct MeterView: View {
     @AppStorage("vatExempt") private var vatExempt = false
     @State private var showingExtras = false
     @State private var showingSettings = false
+    @State private var confirmingStop = false
 
     var body: some View {
         MeterScreen(
@@ -16,19 +17,23 @@ struct MeterView: View {
                 start: { model.start(vatExempt: vatExempt) },
                 pause: model.pause,
                 resume: model.resume,
-                stop: model.stop,
+                stop: { confirmingStop = true },
                 newTrip: model.settle,
                 showExtras: { showingExtras = true },
                 showSettings: { showingSettings = true }
             )
         )
+        .confirmationDialog("meter.stop.confirm", isPresented: $confirmingStop, titleVisibility: .visible) {
+            Button("meter.stop.end", role: .destructive, action: model.stop)
+        } message: {
+            Text("meter.stop.confirm.message")
+        }
         .sheet(isPresented: $showingSettings) {
             SettingsView(tariffId: model.tariffId, tariffSources: model.tariffSources)
         }
         .sheet(isPresented: $showingExtras) {
             ExtrasSheet(
-                fixedPriceExtras: model.fixedPriceExtras,
-                enteredAmountExtras: model.enteredAmountExtras,
+                extras: model.extras,
                 currencyCode: model.reading.currencyCode,
                 onAdd: model.addExtra,
                 onAddAmount: { model.addExtra($0, amountMinorUnits: $1) }

@@ -5,6 +5,7 @@ import moneh.core.distance.LocationSample
 import moneh.core.fare.computeFare
 import moneh.core.log.TripLog
 import moneh.core.log.decode
+import moneh.core.tariff.BASIS_POINTS_PER_WHOLE
 import moneh.core.tariff.Tariff
 import moneh.core.tariff.Tariffs
 import moneh.core.trip.TripEvent
@@ -44,6 +45,7 @@ data class MeterReading(
  *
  * Not thread-safe: call from one thread (the main thread on iOS).
  */
+@Suppress("TooManyFunctions") // The one facade the apps call; splitting it would only move the surface around.
 class Meter private constructor(
     private val tariff: Tariff,
     private var state: TripState,
@@ -83,6 +85,20 @@ class Meter private constructor(
             .filterValues { it.price == null }
             .keys
             .toList()
+
+    /**
+     * What the passenger pays for a fixed-price extra, VAT included at the current trip's rate, for display.
+     * The fare applies VAT once to the whole total, so the sum of these can differ from the receipt by an agora.
+     */
+    fun extraPassengerPrice(extraId: String): Long? {
+        val price = tariff.extras[extraId]?.price ?: return null
+        val vatExempt = (state.events.firstOrNull() as? TripEvent.Hired)?.vatExempt ?: false
+        val multiplier = BASIS_POINTS_PER_WHOLE + if (vatExempt) 0 else tariff.vatBasisPoints
+        return (price * multiplier + BASIS_POINTS_PER_WHOLE / 2) / BASIS_POINTS_PER_WHOLE
+    }
+
+    /** How many times [extraId] was added to the current trip. */
+    fun extraCount(extraId: String): Int = state.events.count { it is TripEvent.ExtraAdded && it.extraId == extraId }
 
     fun hire(
         atMs: Long,

@@ -80,12 +80,15 @@ final class MeterModel {
         meter.tariffSources.compactMap { source in URL(string: source.url).map { (source.title, $0) } }
     }
 
-    var fixedPriceExtras: [String] {
-        meter.fixedPriceExtras
-    }
-
-    var enteredAmountExtras: [String] {
-        meter.enteredAmountExtras
+    /// Views pick up new counts through `reading`, which changes, which every added extra does.
+    var extras: [ExtraItem] {
+        (meter.fixedPriceExtras + meter.enteredAmountExtras).map { id in
+            ExtraItem(
+                id: id,
+                passengerPrice: meter.extraPassengerPrice(extraId: id)?.int64Value,
+                count: Int(meter.extraCount(extraId: id))
+            )
+        }
     }
 
     /// The tariff band in force now, for the idle screen.
