@@ -102,11 +102,7 @@ struct ReceiptSlot: View {
     let reading: FareReading
     let onNewTrip: () -> Void
 
-    @Environment(\.locale) private var locale
-    @Environment(\.layoutDirection) private var layoutDirection
-    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.displayScale) private var displayScale
     @State private var printed: Bool
 
     /// [alreadyPrinted] skips the slide-out, for snapshots.
@@ -130,22 +126,36 @@ struct ReceiptSlot: View {
             }
             .clipped()
             Spacer(minLength: 0)
-            if let image = renderedImage {
-                ShareLink(item: image, preview: SharePreview(Text("receipt.title"), image: image)) {
-                    Text("receipt.share")
-                        .font(Typography.label)
-                        .frame(maxWidth: .infinity, minHeight: minimumTouchTarget)
-                        .foregroundStyle(Palette.ink.color)
-                        .background(Palette.surface.color, in: Capsule())
-                }
-                .buttonStyle(PressableStyle())
-            }
+            ReceiptShareButton(reading: reading)
             PillButton("meter.newTrip", style: .accent, action: onNewTrip)
         }
         .onAppear {
             withAnimation(reduceMotion ? nil : .spring(response: 0.9, dampingFraction: 0.85)) { printed = true }
         }
         .sensoryFeedback(.success, trigger: printed)
+    }
+}
+
+/// Shares the receipt as an image, drawn exactly as it appears on screen.
+struct ReceiptShareButton: View {
+    let reading: FareReading
+
+    @Environment(\.locale) private var locale
+    @Environment(\.layoutDirection) private var layoutDirection
+    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.displayScale) private var displayScale
+
+    var body: some View {
+        if let image = renderedImage {
+            ShareLink(item: image, preview: SharePreview(Text("receipt.title"), image: image)) {
+                Text("receipt.share")
+                    .font(Typography.label)
+                    .frame(maxWidth: .infinity, minHeight: minimumTouchTarget)
+                    .foregroundStyle(Palette.ink.color)
+                    .background(Palette.surface.color, in: Capsule())
+            }
+            .buttonStyle(PressableStyle())
+        }
     }
 
     private var renderedImage: Image? {

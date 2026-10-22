@@ -37,7 +37,11 @@ struct TripStore {
     }
 
     func loadCurrent() -> [TripLog.Entry]? {
-        guard let data = try? Data(contentsOf: currentFile),
+        load(currentFile)
+    }
+
+    private func load(_ file: URL) -> [TripLog.Entry]? {
+        guard let data = try? Data(contentsOf: file),
               let stored = try? JSONDecoder().decode([StoredEntry].self, from: data)
         else { return nil }
         return stored.map {
@@ -51,7 +55,25 @@ struct TripStore {
         try FileManager.default.moveItem(at: currentFile, to: archive.appending(path: "\(head).json"))
     }
 
+    // ponytail: replays every trip on each open; keep a summary index if history grows past a few thousand trips.
+    /// Every settled trip, newest first. A trip whose file no longer verifies has no reading, so tampering shows.
+    func archivedTrips() -> [PastTrip] {
+        let files = (try? FileManager.default.contentsOfDirectory(at: archive, includingPropertiesForKeys: nil)) ?? []
+        return files
+            .map { file in
+                let meter = load(file).flatMap { Meter.companion.restore(entries: $0) }
+                // Reading at time zero clamps to the trip's last event, so it is the final fare.
+                return PastTrip(id: file.lastPathComponent, reading: meter.map { FareReading($0.reading(nowMs: 0)) })
+            }
+            .sorted { ($0.reading?.startedAt ?? .distantPast) > ($1.reading?.startedAt ?? .distantPast) }
+    }
+
     func archivedTripCount() -> Int {
         (try? FileManager.default.contentsOfDirectory(atPath: archive.path()).count) ?? 0
     }
+}
+
+struct PastTrip: Identifiable, Equatable {
+    let id: String
+    let reading: FareReading?
 }

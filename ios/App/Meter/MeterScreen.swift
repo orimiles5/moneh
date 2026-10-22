@@ -8,6 +8,7 @@ struct MeterActions {
     var newTrip: () -> Void = {}
     var showExtras: () -> Void = {}
     var showSettings: () -> Void = {}
+    var showHistory: () -> Void = {}
 }
 
 /// The main screen: one huge fare. Pure rendering of a reading, so every state can be snapshot-tested.
@@ -51,6 +52,13 @@ struct MeterScreen: View {
                 TariffChip(rateId: reading.phase == .idle ? currentRateId : reading.rateId)
                 Spacer()
                 if reading.phase == .idle || reading.phase == .settled {
+                    Button(action: actions.showHistory) {
+                        Image(systemName: "clock.arrow.circlepath")
+                            .font(.title2)
+                            .foregroundStyle(Palette.inkSecondary.color)
+                            .frame(width: minimumTouchTarget, height: minimumTouchTarget)
+                    }
+                    .accessibilityLabel(Text("history.title"))
                     Button(action: actions.showSettings) {
                         Image(systemName: "gearshape.fill")
                             .font(.title2)

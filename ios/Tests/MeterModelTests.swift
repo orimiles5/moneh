@@ -43,4 +43,20 @@ struct MeterModelTests {
         #expect(model.reading.phase == .idle)
         #expect(store.loadCurrent() == nil)
     }
+
+    @Test func historyListsSettledTripsAndFlagsTampering() throws {
+        let model = model(at: clock)
+        model.start(vatExempt: false)
+        model.stop()
+        model.settle()
+        let trips = store.archivedTrips()
+        #expect(trips.count == 1)
+        #expect(trips.first?.reading?.phase == .settled)
+        #expect(trips.first?.reading?.total == 1246) // starting fare 10.56 x 1.18
+
+        let file = try store.directory.appending(path: "archive").appending(path: #require(trips.first?.id))
+        let text = try String(contentsOf: file, encoding: .utf8).replacingOccurrences(of: "Hired", with: "Hirex")
+        try text.write(to: file, atomically: true, encoding: .utf8)
+        #expect(store.archivedTrips().first?.reading == nil)
+    }
 }
