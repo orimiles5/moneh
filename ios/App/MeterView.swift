@@ -7,6 +7,7 @@ struct MeterView: View {
     @State private var showingExtras = false
     @State private var showingSettings = false
     @State private var confirmingStop = false
+    @State private var pastTrips: [PastTrip]?
 
     var body: some View {
         MeterScreen(
@@ -20,13 +21,21 @@ struct MeterView: View {
                 stop: { confirmingStop = true },
                 newTrip: model.settle,
                 showExtras: { showingExtras = true },
-                showSettings: { showingSettings = true }
+                showSettings: { showingSettings = true },
+                showHistory: { pastTrips = TripStore.standard.archivedTrips() }
             )
         )
         .confirmationDialog("meter.stop.confirm", isPresented: $confirmingStop, titleVisibility: .visible) {
             Button("meter.stop.end", role: .destructive, action: model.stop)
         } message: {
             Text("meter.stop.confirm.message")
+        }
+        .sheet(isPresented: Binding(get: { pastTrips != nil }, set: {
+            if !$0 {
+                pastTrips = nil
+            }
+        })) {
+            HistoryView(trips: pastTrips ?? [])
         }
         .sheet(isPresented: $showingSettings) {
             SettingsView(tariffId: model.tariffId, tariffSources: model.tariffSources)
