@@ -45,6 +45,8 @@ class TripLogTest {
         assertEquals(events, log.entries.map { decode(it.encoded) })
         val eilat = TripEvent.Hired(start, "il-2026-04", vatExempt = true)
         assertEquals(eilat, decode(encode(eilat)))
+        val removed = TripEvent.ExtraRemoved(start, "booking")
+        assertEquals(removed, decode(encode(removed)))
     }
 
     @Test

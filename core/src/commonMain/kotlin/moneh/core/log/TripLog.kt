@@ -62,6 +62,7 @@ internal fun encode(event: TripEvent): String {
             is TripEvent.Paused -> listOf("Paused")
             is TripEvent.Resumed -> listOf("Resumed")
             is TripEvent.ExtraAdded -> listOf("ExtraAdded", event.extraId, event.amountMinorUnits?.toString() ?: "")
+            is TripEvent.ExtraRemoved -> listOf("ExtraRemoved", event.extraId)
             is TripEvent.Stopped -> listOf("Stopped")
             is TripEvent.Settled -> listOf("Settled")
         }
@@ -83,6 +84,7 @@ internal fun decode(encoded: String): TripEvent {
         "Paused" -> TripEvent.Paused(at)
         "Resumed" -> TripEvent.Resumed(at)
         "ExtraAdded" -> TripEvent.ExtraAdded(at, arg(0), arg(1).ifEmpty { null }?.toLong())
+        "ExtraRemoved" -> TripEvent.ExtraRemoved(at, arg(0))
         "Stopped" -> TripEvent.Stopped(at)
         "Settled" -> TripEvent.Settled(at)
         else -> throw IllegalArgumentException("Unknown event $type")

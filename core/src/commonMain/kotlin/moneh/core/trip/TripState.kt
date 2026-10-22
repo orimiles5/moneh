@@ -37,6 +37,11 @@ sealed interface TripState {
             amountMinorUnits: Long? = null,
         ) = Hired(events.append(TripEvent.ExtraAdded(at, extraId, amountMinorUnits)))
 
+        fun removeExtra(
+            at: Instant,
+            extraId: String,
+        ) = Hired(events.appendRemoval(at, extraId))
+
         fun pause(at: Instant) = Paused(events.append(TripEvent.Paused(at)))
 
         fun stop(at: Instant) = Stopped(events.append(TripEvent.Stopped(at)))
@@ -50,6 +55,11 @@ sealed interface TripState {
             extraId: String,
             amountMinorUnits: Long? = null,
         ) = Paused(events.append(TripEvent.ExtraAdded(at, extraId, amountMinorUnits)))
+
+        fun removeExtra(
+            at: Instant,
+            extraId: String,
+        ) = Paused(events.appendRemoval(at, extraId))
 
         fun resume(at: Instant) = Hired(events.append(TripEvent.Resumed(at)))
 
@@ -66,12 +76,29 @@ sealed interface TripState {
             amountMinorUnits: Long? = null,
         ) = Stopped(events.append(TripEvent.ExtraAdded(at, extraId, amountMinorUnits)))
 
+        fun removeExtra(
+            at: Instant,
+            extraId: String,
+        ) = Stopped(events.appendRemoval(at, extraId))
+
         fun settle(at: Instant) = Settled(events.append(TripEvent.Settled(at)))
     }
 
     data class Settled internal constructor(
         override val events: List<TripEvent>,
     ) : TripState
+}
+
+/** Additions of [extraId] still in force: those added minus those removed. */
+fun List<TripEvent>.extraCount(extraId: String): Int =
+    count { it is TripEvent.ExtraAdded && it.extraId == extraId } - count { it is TripEvent.ExtraRemoved && it.extraId == extraId }
+
+private fun List<TripEvent>.appendRemoval(
+    at: Instant,
+    extraId: String,
+): List<TripEvent> {
+    require(extraCount(extraId) > 0) { "No $extraId to remove" }
+    return append(TripEvent.ExtraRemoved(at, extraId))
 }
 
 private fun List<TripEvent>.append(event: TripEvent): List<TripEvent> {

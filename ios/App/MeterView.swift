@@ -45,7 +45,8 @@ struct MeterView: View {
                 extras: model.extras,
                 currencyCode: model.reading.currencyCode,
                 onAdd: model.addExtra,
-                onAddAmount: { model.addExtra($0, amountMinorUnits: $1) }
+                onAddAmount: { model.addExtra($0, amountMinorUnits: $1) },
+                onRemove: model.removeExtra
             )
             .presentationDetents([.medium, .large])
         }

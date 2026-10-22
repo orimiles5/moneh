@@ -10,6 +10,7 @@ import moneh.core.tariff.Tariff
 import moneh.core.tariff.Tariffs
 import moneh.core.trip.TripEvent
 import moneh.core.trip.TripState
+import moneh.core.trip.extraCount
 import moneh.core.trip.replay
 import kotlin.time.Instant
 
@@ -98,7 +99,7 @@ class Meter private constructor(
     }
 
     /** How many times [extraId] was added to the current trip. */
-    fun extraCount(extraId: String): Int = state.events.count { it is TripEvent.ExtraAdded && it.extraId == extraId }
+    fun extraCount(extraId: String): Int = state.events.extraCount(extraId)
 
     fun hire(
         atMs: Long,
@@ -132,6 +133,20 @@ class Meter private constructor(
         extraId: String,
         amountMinorUnits: Long,
     ) = amountMinorUnits >= 0 && addExtra(atMs, extraId, amountMinorUnits)
+
+    /** Cancels the latest addition of [extraId], for a mistaken tap. False if there is none. */
+    fun removeExtra(
+        atMs: Long,
+        extraId: String,
+    ) = state.events.extraCount(extraId) > 0 &&
+        transition {
+            when (it) {
+                is TripState.Hired -> it.removeExtra(at(atMs), extraId)
+                is TripState.Paused -> it.removeExtra(at(atMs), extraId)
+                is TripState.Stopped -> it.removeExtra(at(atMs), extraId)
+                else -> null
+            }
+        }
 
     /** [speedMetresPerSecond] below zero means unknown, as CoreLocation reports it. */
     fun location(
