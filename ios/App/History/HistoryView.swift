@@ -25,6 +25,13 @@ struct HistoryView: View {
             .navigationTitle("history.title")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                if let export = try? TripExport.file(trips.compactMap(\.reading)), !trips.isEmpty {
+                    ToolbarItem(placement: .topBarLeading) {
+                        ShareLink(item: export) {
+                            Label("history.export", systemImage: "square.and.arrow.up")
+                        }
+                    }
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("common.done") { dismiss() }
                 }

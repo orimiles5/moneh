@@ -36,7 +36,7 @@ struct MeterModelTests {
         later.settle(paymentMethod: "cash")
         #expect(later.reading.phase == .idle)
         #expect(store.archivedTripCount() == 1)
-        #expect(store.loadCurrent() == nil)
+        #expect(store.loadCurrents().isEmpty)
     }
 
     @Test func eilatTripIsVatExempt() {
@@ -52,7 +52,7 @@ struct MeterModelTests {
         model.stop()
         model.addExtra("booking")
         #expect(model.reading.phase == .idle)
-        #expect(store.loadCurrent() == nil)
+        #expect(store.loadCurrents().isEmpty)
     }
 
     @Test func historyListsSettledTripsAndFlagsTampering() throws {
@@ -95,5 +95,69 @@ struct MeterModelTests {
     @Test(arguments: [("000000018", true), ("000000019", false), ("12345678a", false), ("1234567890", false)])
     func validatesIsraeliIds(id: String, valid: Bool) {
         #expect(IsraeliID.isValid(id) == valid)
+    }
+
+    @Test func shiftsNeedCompleteDetailsAndCloseOnlyWhenFree() {
+        #expect(!model(at: clock).openShift(), "no taxi details yet")
+
+        var profile = IssuerProfile(
+            taxiNumber: "1234",
+            licenceNumber: "12-345-67",
+            driverName: "Driver",
+            driverId: "000000018"
+        )
+        profile.dealers = [IssuerProfile.Dealer(name: "Dealer", number: "512345678")]
+        let model = model(at: clock, profile: profile)
+        #expect(model.openShift())
+        #expect(model.shift?.driverId == "000000018")
+        #expect(store.loadShift() == model.shift, "the open shift survives a restart")
+
+        model.start(vatExempt: false)
+        model.closeShift()
+        #expect(model.shift != nil, "a shift does not close mid-trip")
+        model.stop()
+        model.settle(paymentMethod: "cash")
+        model.closeShift()
+        #expect(model.shift == nil)
+        #expect(store.loadShift() == nil)
+        #expect(store.allShifts().first?.closedAt != nil)
+    }
+
+    @Test func sealLogRecordsTariffAndLicenceChangesOnce() {
+        _ = model(at: clock)
+        _ = model(at: clock)
+        #expect(store.sealLog().map(\.kind) == [.tariff], "the same tariff is recorded once")
+        store.recordSeal(.licence, "12-345-67", at: clock)
+        store.recordSeal(.licence, "12-345-67", at: clock)
+        store.recordSeal(.licence, "98-765-43", at: clock)
+        #expect(store.sealLog().map(\.value) == [MeterModel.tariffId, "12-345-67", "98-765-43"])
+    }
+
+    @Test func sharedTripsRunSideBySideAndSurviveARestart() {
+        var profile = IssuerProfile(
+            taxiNumber: "1234",
+            licenceNumber: "12-345-67",
+            driverName: "Driver",
+            driverId: "000000018"
+        )
+        profile.dealers = [IssuerProfile.Dealer(name: "Dealer", number: "512345678")]
+        let model = model(at: clock, profile: profile)
+        model.startShared(vatExempt: false)
+        #expect(model.tripCount == 1, "no shared trip without a shift and a running trip")
+        model.openShift()
+        model.start(vatExempt: false)
+        model.startShared(vatExempt: false)
+        #expect(model.tripCount == 2)
+        #expect(model.activeTrip == 1)
+        #expect(model.reading.shared)
+
+        let restarted = self.model(at: clock.addingTimeInterval(60), profile: profile)
+        #expect(restarted.tripCount == 2, "both trips are restored")
+        restarted.stop()
+        restarted.settle(paymentMethod: "cash")
+        #expect(restarted.tripCount == 1)
+        #expect(restarted.reading.phase == .hired, "the other trip carries on")
+        restarted.closeShift()
+        #expect(restarted.shift != nil, "the shift stays open while a trip runs")
     }
 }

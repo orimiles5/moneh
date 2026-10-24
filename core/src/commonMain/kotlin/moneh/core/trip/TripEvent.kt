@@ -9,12 +9,14 @@ sealed interface TripEvent {
     /**
      * [vatExempt] marks a trip in a zone without VAT, such as Eilat; recorded so the fare is reproducible.
      * [agreedPriceMinorUnits] is a price agreed before the trip (spec 2018 §9.9): the passenger pays the lower of it and the fare.
+     * [source] is where the trip came from (§9.11): "street", "booking" or "institutional"; null if not recorded.
      */
     data class Hired(
         override val at: Instant,
         val tariffVersion: String,
         val vatExempt: Boolean = false,
         val agreedPriceMinorUnits: Long? = null,
+        val source: String? = null,
     ) : TripEvent
 
     /** Distance travelled since the previous [Moved], in metres, as measured by the distance pipeline. */
@@ -49,6 +51,11 @@ sealed interface TripEvent {
         override val at: Instant,
         val basisPoints: Int? = null,
         val amountMinorUnits: Long? = null,
+    ) : TripEvent
+
+    /** Another trip ran at the same time from here on (spec 2018 §8.3.3); the invoice is marked as a shared trip. */
+    data class Shared(
+        override val at: Instant,
     ) : TripEvent
 
     data class Stopped(

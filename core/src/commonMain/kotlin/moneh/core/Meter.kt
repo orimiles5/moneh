@@ -10,6 +10,7 @@ import moneh.core.tariff.MAX_EXTRA_PRICE
 import moneh.core.tariff.Tariff
 import moneh.core.tariff.Tariffs
 import moneh.core.trip.PAYMENT_METHODS
+import moneh.core.trip.TRIP_SOURCES
 import moneh.core.trip.TripEvent
 import moneh.core.trip.TripState
 import moneh.core.trip.extraCount
@@ -17,6 +18,15 @@ import moneh.core.trip.replay
 import kotlin.time.Instant
 
 enum class MeterPhase { IDLE, HIRED, PAUSED, STOPPED, SETTLED }
+
+/** One rate of the tariff report. [perKm] applies from the matching [perKmFromKm] of the trip. */
+data class RateReport(
+    val rateId: String,
+    val startingFare: Long,
+    val perMinute: Long,
+    val perKm: List<Long>,
+    val perKmFromKm: List<Int>,
+)
 
 /** Everything a screen needs, in plain types. Money is in minor units. */
 data class MeterReading(
@@ -51,6 +61,10 @@ data class MeterReading(
     val invoice: TripEvent.InvoiceIssued?,
     /** "cash", "card", or empty until the trip is settled with a method. */
     val paymentMethod: String,
+    /** "street", "booking", "institutional", or empty if not recorded. */
+    val source: String,
+    /** True once another trip ran alongside this one; the invoice says so. */
+    val shared: Boolean,
     val logHead: String,
 )
 
@@ -111,9 +125,26 @@ class Meter private constructor(
     fun extraPassengerPrice(extraId: String): Long? {
         val price = tariff.extras[extraId]?.price ?: return null
         val vatExempt = (state.events.firstOrNull() as? TripEvent.Hired)?.vatExempt ?: false
-        val multiplier = BASIS_POINTS_PER_WHOLE + if (vatExempt) 0 else tariff.vatBasisPoints
-        return (price * multiplier + BASIS_POINTS_PER_WHOLE / 2) / BASIS_POINTS_PER_WHOLE
+        return withVat(price, if (vatExempt) 0 else tariff.vatBasisPoints)
     }
+
+    /** The tariff data report (spec 2018 Annex B): each rate with VAT, as the passenger pays it. */
+    val rateReport: List<RateReport>
+        get() =
+            tariff.rates.map { (id, rate) ->
+                RateReport(
+                    rateId = id,
+                    startingFare = withVat(rate.startingFare, tariff.vatBasisPoints),
+                    perMinute = withVat(rate.perMinute, tariff.vatBasisPoints),
+                    perKm = rate.perKm.map { withVat(it.price, tariff.vatBasisPoints) },
+                    perKmFromKm = rate.perKm.map { it.fromKm },
+                )
+            }
+
+    private fun withVat(
+        price: Long,
+        vatBasisPoints: Int,
+    ) = (price * (BASIS_POINTS_PER_WHOLE + vatBasisPoints) + BASIS_POINTS_PER_WHOLE / 2) / BASIS_POINTS_PER_WHOLE
 
     /** How many times [extraId] was added to the current trip. */
     fun extraCount(extraId: String): Int = state.events.extraCount(extraId)
@@ -121,20 +152,30 @@ class Meter private constructor(
     fun hire(
         atMs: Long,
         vatExempt: Boolean,
-    ): Boolean = hire(atMs, vatExempt, null)
+    ): Boolean = hire(atMs, vatExempt, null, null)
+
+    /** A trip from [source] (spec 2018 §9.11): "street", "booking" or "institutional"; [agreedPriceMinorUnits] 0 for none. */
+    fun hireFrom(
+        atMs: Long,
+        vatExempt: Boolean,
+        source: String,
+        agreedPriceMinorUnits: Long,
+    ): Boolean =
+        source in TRIP_SOURCES && agreedPriceMinorUnits >= 0 && hire(atMs, vatExempt, agreedPriceMinorUnits.takeIf { it > 0 }, source)
 
     /** A trip at a price agreed beforehand (spec 2018 §9.9): the passenger pays the lower of it and the fare. */
     fun hireAtAgreedPrice(
         atMs: Long,
         vatExempt: Boolean,
         agreedPriceMinorUnits: Long,
-    ): Boolean = agreedPriceMinorUnits > 0 && hire(atMs, vatExempt, agreedPriceMinorUnits)
+    ): Boolean = agreedPriceMinorUnits > 0 && hire(atMs, vatExempt, agreedPriceMinorUnits, null)
 
     private fun hire(
         atMs: Long,
         vatExempt: Boolean,
         agreedPrice: Long?,
-    ) = transition { (it as? TripState.Idle)?.hire(at(atMs), tariff.id, vatExempt, agreedPrice) }
+        source: String?,
+    ) = transition { (it as? TripState.Idle)?.hire(at(atMs), tariff.id, vatExempt, agreedPrice, source) }
         .also { if (it) tracker = DistanceTracker() }
 
     /** A percentage discount (spec 2018 §9.10), in hired or payment; replaces any earlier discount. 1000 = 10%. */
@@ -163,6 +204,17 @@ class Meter private constructor(
 
     /** Only for a trip paused by an earlier version; the meter states are free, hired and payment, with no pause. */
     fun resume(atMs: Long) = transition { (it as? TripState.Paused)?.resume(at(atMs)) }
+
+    /** Marks the trip as shared once another runs alongside it (spec 2018 §8.3.3); later calls change nothing. */
+    fun share(atMs: Long): Boolean =
+        state.events.none { it is TripEvent.Shared } &&
+            transition {
+                when (it) {
+                    is TripState.Hired -> it.share(at(atMs))
+                    is TripState.Stopped -> it.share(at(atMs))
+                    else -> null
+                }
+            }
 
     /** Hired to payment (תפוס → תשלום). */
     fun stop(atMs: Long) =
@@ -282,6 +334,8 @@ class Meter private constructor(
             stoppedAtMs = stoppedAtMs,
             invoice = state.events.firstNotNullOfOrNull { it as? TripEvent.InvoiceIssued },
             paymentMethod = (state.events.last() as? TripEvent.Settled)?.paymentMethod ?: "",
+            source = hired.source ?: "",
+            shared = state.events.any { it is TripEvent.Shared },
             logHead = log.head,
         )
     }
@@ -319,6 +373,8 @@ class Meter private constructor(
             stoppedAtMs = 0,
             invoice = null,
             paymentMethod = "",
+            source = "",
+            shared = false,
             logHead = log.head,
         )
 

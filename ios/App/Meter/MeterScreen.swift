@@ -9,6 +9,10 @@ struct MeterActions {
     var showExtras: () -> Void = {}
     var showSettings: () -> Void = {}
     var showHistory: () -> Void = {}
+    var openShift: () -> Void = {}
+    var startShared: () -> Void = {}
+    var selectTrip: (Int) -> Void = { _ in }
+    var showShift: () -> Void = {}
 }
 
 /// The main screen: one huge fare. Pure rendering of a reading, so every state can be snapshot-tested.
@@ -17,6 +21,11 @@ struct MeterScreen: View {
     /// The band in force now; shown before a trip starts, when the reading has no trip yet.
     let currentRateId: String
     let locationProblem: LocationFeed.Problem?
+    var shiftOpen = true
+    /// Shared trips (spec 2018 §8.3.3): how many run, and which one this screen shows.
+    var tripCount = 1
+    var activeTrip = 0
+    var tripSource: Binding<String> = .constant("street")
     let actions: MeterActions
 
     @Environment(\.locale) private var locale
@@ -52,6 +61,13 @@ struct MeterScreen: View {
                 TariffChip(rateId: reading.phase == .idle ? currentRateId : reading.rateId)
                 Spacer()
                 if reading.phase == .idle || reading.phase == .settled {
+                    Button(action: actions.showShift) {
+                        Image(systemName: "person.badge.clock")
+                            .font(.title2)
+                            .foregroundStyle(Palette.inkSecondary.color)
+                            .frame(width: minimumTouchTarget, height: minimumTouchTarget)
+                    }
+                    .accessibilityLabel(Text("shift.title"))
                     Button(action: actions.showHistory) {
                         Image(systemName: "clock.arrow.circlepath")
                             .font(.title2)
@@ -135,10 +151,32 @@ struct MeterScreen: View {
         VStack(spacing: Spacing.medium) {
             switch reading.phase {
             case .idle, .settled:
-                PillButton("meter.agreedPrice", style: .quiet, action: actions.startAtAgreedPrice)
-                PillButton("meter.start", style: .accent, action: actions.start)
+                if shiftOpen {
+                    Picker("trip.source", selection: tripSource) {
+                        Text("trip.source.street").tag("street")
+                        Text("trip.source.booking").tag("booking")
+                        Text("trip.source.institutional").tag("institutional")
+                    }
+                    .pickerStyle(.segmented)
+                    PillButton("meter.agreedPrice", style: .quiet, action: actions.startAtAgreedPrice)
+                    PillButton("meter.start", style: .accent, action: actions.start)
+                } else {
+                    PillButton("shift.open", style: .accent, action: actions.openShift)
+                }
             case .hired:
-                PillButton("meter.extras", style: .quiet, action: actions.showExtras)
+                if tripCount > 1 {
+                    HStack(spacing: Spacing.small) {
+                        ForEach(0 ..< tripCount, id: \.self) { index in
+                            PillButton("trip.number \(index + 1)", style: index == activeTrip ? .accent : .quiet) {
+                                actions.selectTrip(index)
+                            }
+                        }
+                    }
+                }
+                HStack(spacing: Spacing.medium) {
+                    PillButton("meter.extras", style: .quiet, action: actions.showExtras)
+                    PillButton("trip.shared.start", style: .quiet, action: actions.startShared)
+                }
                 PillButton("meter.stop", style: .danger, action: actions.stop)
             case .paused: // Only a trip paused by an earlier version.
                 HStack(spacing: Spacing.medium) {

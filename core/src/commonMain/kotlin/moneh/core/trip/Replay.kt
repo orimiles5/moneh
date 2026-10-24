@@ -6,7 +6,15 @@ internal fun replay(events: List<TripEvent>): TripState =
         val next =
             when (state) {
                 is TripState.Idle ->
-                    (event as? TripEvent.Hired)?.let { state.hire(it.at, it.tariffVersion, it.vatExempt, it.agreedPriceMinorUnits) }
+                    (event as? TripEvent.Hired)?.let {
+                        state.hire(
+                            it.at,
+                            it.tariffVersion,
+                            it.vatExempt,
+                            it.agreedPriceMinorUnits,
+                            it.source,
+                        )
+                    }
                 is TripState.Hired -> state.apply(event)
                 is TripState.Paused -> state.apply(event)
                 is TripState.Stopped -> state.apply(event)
@@ -23,6 +31,7 @@ private fun TripState.Hired.apply(event: TripEvent): TripState? =
         is TripEvent.ExtraAdded -> addExtra(event.at, event.extraId, event.amountMinorUnits)
         is TripEvent.ExtraRemoved -> removeExtra(event.at, event.extraId)
         is TripEvent.DiscountSet -> setDiscount(event.at, event.basisPoints, event.amountMinorUnits)
+        is TripEvent.Shared -> share(event.at)
         else -> null
     }
 
@@ -43,5 +52,6 @@ private fun TripState.Stopped.apply(event: TripEvent): TripState? =
         is TripEvent.ExtraAdded -> addExtra(event.at, event.extraId, event.amountMinorUnits)
         is TripEvent.ExtraRemoved -> removeExtra(event.at, event.extraId)
         is TripEvent.DiscountSet -> setDiscount(event.at, event.basisPoints, event.amountMinorUnits)
+        is TripEvent.Shared -> share(event.at)
         else -> null
     }

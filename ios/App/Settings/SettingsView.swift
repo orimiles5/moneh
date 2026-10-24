@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     let tariffId: String
     let tariffSources: [(title: String, url: URL)]
+    var report: MeterReportView?
 
     @AppStorage("appearance") private var appearance = AppearancePreference.system
     @AppStorage("vatExempt") private var vatExempt = false
@@ -14,6 +15,9 @@ struct SettingsView: View {
             Form {
                 Section {
                     NavigationLink("profile.title") { ProfileForm() }
+                    if let report {
+                        NavigationLink("report.title") { report }
+                    }
                 }
                 Section {
                     Toggle("settings.night", isOn: Binding(

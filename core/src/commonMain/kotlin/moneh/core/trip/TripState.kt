@@ -19,9 +19,11 @@ sealed interface TripState {
             tariffVersion: String,
             vatExempt: Boolean = false,
             agreedPriceMinorUnits: Long? = null,
+            source: String? = null,
         ): Hired {
             require(agreedPriceMinorUnits == null || agreedPriceMinorUnits > 0) { "Agreed price must be positive" }
-            return Hired(listOf(TripEvent.Hired(at, tariffVersion, vatExempt, agreedPriceMinorUnits)))
+            require(source == null || source in TRIP_SOURCES) { "Unknown trip source $source" }
+            return Hired(listOf(TripEvent.Hired(at, tariffVersion, vatExempt, agreedPriceMinorUnits, source)))
         }
     }
 
@@ -52,6 +54,8 @@ sealed interface TripState {
             basisPoints: Int? = null,
             amountMinorUnits: Long? = null,
         ) = Hired(events.appendDiscount(TripEvent.DiscountSet(at, basisPoints, amountMinorUnits)))
+
+        fun share(at: Instant) = Hired(events.append(TripEvent.Shared(at)))
 
         fun pause(at: Instant) = Paused(events.append(TripEvent.Paused(at)))
 
@@ -98,6 +102,8 @@ sealed interface TripState {
             amountMinorUnits: Long? = null,
         ) = Stopped(events.appendDiscount(TripEvent.DiscountSet(at, basisPoints, amountMinorUnits)))
 
+        fun share(at: Instant) = Stopped(events.append(TripEvent.Shared(at)))
+
         fun settle(
             at: Instant,
             paymentMethod: String? = null,
@@ -135,6 +141,8 @@ private fun List<TripEvent>.appendRemoval(
 }
 
 val PAYMENT_METHODS = setOf("cash", "card")
+
+val TRIP_SOURCES = setOf("street", "booking", "institutional")
 
 private fun List<TripEvent>.appendDiscount(discount: TripEvent.DiscountSet): List<TripEvent> {
     val percent = discount.basisPoints

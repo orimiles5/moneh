@@ -6,6 +6,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 
@@ -47,8 +48,12 @@ class TripLogTest {
         assertEquals(eilat, decode(encode(eilat)))
         val removed = TripEvent.ExtraRemoved(start, "booking")
         assertEquals(removed, decode(encode(removed)))
-        val agreed = TripEvent.Hired(start, "il-2026-04", agreedPriceMinorUnits = 5000)
-        assertEquals(agreed, decode(encode(agreed)))
+        listOf(
+            TripEvent.Hired(start, "il-2026-04", agreedPriceMinorUnits = 5000),
+            TripEvent.Hired(start, "il-2026-04", source = "booking"),
+            TripEvent.Hired(start, "il-2026-04", agreedPriceMinorUnits = 5000, source = "street"),
+        ).forEach { assertEquals(it, decode(encode(it))) }
+        assertTrue(encode(TripEvent.Hired(start, "il-2026-04")).endsWith("5:Hired10:il-2026-041:0"), "no trailing empty fields")
         listOf(TripEvent.DiscountSet(start, basisPoints = 1000), TripEvent.DiscountSet(start, amountMinorUnits = 250))
             .forEach { assertEquals(it, decode(encode(it))) }
         listOf(

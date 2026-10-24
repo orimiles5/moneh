@@ -58,10 +58,10 @@ class TripLog private constructor(
 internal fun encode(event: TripEvent): String {
     val fields =
         when (event) {
-            // The agreed price is appended only when set, so logs written before it existed keep their encoding.
+            // Optional fields trail and empty ones at the end are dropped, so logs written before they existed keep their encoding.
             is TripEvent.Hired ->
                 listOf("Hired", event.tariffVersion, if (event.vatExempt) "1" else "0") +
-                    listOfNotNull(event.agreedPriceMinorUnits?.toString())
+                    listOf(event.agreedPriceMinorUnits?.toString() ?: "", event.source ?: "").dropLastWhile { it.isEmpty() }
             is TripEvent.Moved -> listOf("Moved", event.metres.toString())
             is TripEvent.Paused -> listOf("Paused")
             is TripEvent.Resumed -> listOf("Resumed")
@@ -69,6 +69,7 @@ internal fun encode(event: TripEvent): String {
             is TripEvent.ExtraRemoved -> listOf("ExtraRemoved", event.extraId)
             is TripEvent.DiscountSet ->
                 listOf("DiscountSet", event.basisPoints?.toString() ?: "", event.amountMinorUnits?.toString() ?: "")
+            is TripEvent.Shared -> listOf("Shared")
             is TripEvent.Stopped -> listOf("Stopped")
             is TripEvent.Settled -> listOf("Settled") + listOfNotNull(event.paymentMethod)
             is TripEvent.InvoiceIssued ->
@@ -90,13 +91,21 @@ internal fun decode(encoded: String): TripEvent {
 
     fun arg(index: Int) = requireNotNull(args.getOrNull(index)) { "Missing field $index: $encoded" }
     return when (type) {
-        "Hired" -> TripEvent.Hired(at, arg(0), arg(1) == "1", args.getOrNull(2)?.toLong())
+        "Hired" ->
+            TripEvent.Hired(
+                at,
+                arg(0),
+                arg(1) == "1",
+                args.getOrNull(2)?.ifEmpty { null }?.toLong(),
+                args.getOrNull(3)?.ifEmpty { null },
+            )
         "Moved" -> TripEvent.Moved(at, arg(0).toLong())
         "Paused" -> TripEvent.Paused(at)
         "Resumed" -> TripEvent.Resumed(at)
         "ExtraAdded" -> TripEvent.ExtraAdded(at, arg(0), arg(1).ifEmpty { null }?.toLong())
         "ExtraRemoved" -> TripEvent.ExtraRemoved(at, arg(0))
         "DiscountSet" -> TripEvent.DiscountSet(at, arg(0).ifEmpty { null }?.toInt(), arg(1).ifEmpty { null }?.toLong())
+        "Shared" -> TripEvent.Shared(at)
         "Stopped" -> TripEvent.Stopped(at)
         "Settled" -> TripEvent.Settled(at, args.getOrNull(0))
         "InvoiceIssued" -> TripEvent.InvoiceIssued(at, arg(0).toLong(), arg(1), arg(2), arg(3), arg(4), arg(5), arg(6))

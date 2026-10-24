@@ -10,6 +10,10 @@ struct ReceiptCard: View {
             VStack(alignment: .leading, spacing: Spacing.tiny) {
                 Text("receipt.title")
                     .font(Typography.headline)
+                if reading.shared {
+                    Text("receipt.shared")
+                        .font(Typography.label)
+                }
                 if let startedAt = reading.startedAt {
                     Text(startedAt.formatted(.dateTime.day().month().year().hour().minute().locale(locale)))
                         .font(Typography.caption)
