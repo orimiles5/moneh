@@ -122,4 +122,14 @@ struct MeterModelTests {
         #expect(store.loadShift() == nil)
         #expect(store.allShifts().first?.closedAt != nil)
     }
+
+    @Test func sealLogRecordsTariffAndLicenceChangesOnce() {
+        _ = model(at: clock)
+        _ = model(at: clock)
+        #expect(store.sealLog().map(\.kind) == [.tariff], "the same tariff is recorded once")
+        store.recordSeal(.licence, "12-345-67", at: clock)
+        store.recordSeal(.licence, "12-345-67", at: clock)
+        store.recordSeal(.licence, "98-765-43", at: clock)
+        #expect(store.sealLog().map(\.value) == [MeterModel.tariffId, "12-345-67", "98-765-43"])
+    }
 }

@@ -70,7 +70,16 @@ struct MeterView: View {
             .presentationDetents([.medium])
         }
         .sheet(isPresented: $showingSettings) {
-            SettingsView(tariffId: model.tariffId, tariffSources: model.tariffSources)
+            SettingsView(
+                tariffId: model.tariffId,
+                tariffSources: model.tariffSources,
+                report: MeterReportView(
+                    tariffId: model.tariffId,
+                    rates: model.rateReport,
+                    extras: model.extras,
+                    seal: TripStore.standard.sealLog()
+                )
+            )
         }
         .sheet(isPresented: $showingExtras) {
             ExtrasSheet(

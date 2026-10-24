@@ -18,6 +18,15 @@ import kotlin.time.Instant
 
 enum class MeterPhase { IDLE, HIRED, PAUSED, STOPPED, SETTLED }
 
+/** One rate of the tariff report. [perKm] applies from the matching [perKmFromKm] of the trip. */
+data class RateReport(
+    val rateId: String,
+    val startingFare: Long,
+    val perMinute: Long,
+    val perKm: List<Long>,
+    val perKmFromKm: List<Int>,
+)
+
 /** Everything a screen needs, in plain types. Money is in minor units. */
 data class MeterReading(
     val phase: MeterPhase,
@@ -111,9 +120,26 @@ class Meter private constructor(
     fun extraPassengerPrice(extraId: String): Long? {
         val price = tariff.extras[extraId]?.price ?: return null
         val vatExempt = (state.events.firstOrNull() as? TripEvent.Hired)?.vatExempt ?: false
-        val multiplier = BASIS_POINTS_PER_WHOLE + if (vatExempt) 0 else tariff.vatBasisPoints
-        return (price * multiplier + BASIS_POINTS_PER_WHOLE / 2) / BASIS_POINTS_PER_WHOLE
+        return withVat(price, if (vatExempt) 0 else tariff.vatBasisPoints)
     }
+
+    /** The tariff data report (spec 2018 Annex B): each rate with VAT, as the passenger pays it. */
+    val rateReport: List<RateReport>
+        get() =
+            tariff.rates.map { (id, rate) ->
+                RateReport(
+                    rateId = id,
+                    startingFare = withVat(rate.startingFare, tariff.vatBasisPoints),
+                    perMinute = withVat(rate.perMinute, tariff.vatBasisPoints),
+                    perKm = rate.perKm.map { withVat(it.price, tariff.vatBasisPoints) },
+                    perKmFromKm = rate.perKm.map { it.fromKm },
+                )
+            }
+
+    private fun withVat(
+        price: Long,
+        vatBasisPoints: Int,
+    ) = (price * (BASIS_POINTS_PER_WHOLE + vatBasisPoints) + BASIS_POINTS_PER_WHOLE / 2) / BASIS_POINTS_PER_WHOLE
 
     /** How many times [extraId] was added to the current trip. */
     fun extraCount(extraId: String): Int = state.events.extraCount(extraId)

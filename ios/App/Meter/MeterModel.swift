@@ -46,6 +46,7 @@ final class MeterModel {
         self.now = now
         meter = store.loadCurrent().flatMap { Meter.companion.restore(entries: $0) } ?? Meter(tariffId: Self.tariffId)
         shift = store.loadShift()
+        store.recordSeal(.tariff, Self.tariffId, at: now())
         phaseChanged()
     }
 
@@ -120,6 +121,7 @@ final class MeterModel {
             driverId: profile.driverId
         )
         try? store.saveShift(opened)
+        store.recordSeal(.licence, profile.licenceNumber, at: opened.openedAt)
         shift = opened
         phaseChanged()
         return true
@@ -141,6 +143,10 @@ final class MeterModel {
         try? store.archiveCurrent(head: meter.reading(nowMs: nowMs).logHead)
         meter = Meter(tariffId: Self.tariffId)
         phaseChanged()
+    }
+
+    var rateReport: [RateReport] {
+        meter.rateReport
     }
 
     var tariffId: String {

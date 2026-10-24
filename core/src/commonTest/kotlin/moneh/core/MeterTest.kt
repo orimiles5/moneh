@@ -72,6 +72,16 @@ class MeterTest {
     }
 
     @Test
+    fun reportsRatesWithVat() {
+        val tariffA = Meter("il-2026-04").rateReport.single { it.rateId == "A" }
+        // 10.56 x 1.18 = 12.4608; 1.65 x 1.18 = 1.947; 3.21 x 1.18 = 3.7878.
+        assertEquals(1246, tariffA.startingFare)
+        assertEquals(195, tariffA.perMinute)
+        assertEquals(listOf(195L, 379L), tariffA.perKm)
+        assertEquals(listOf(0, 10), tariffA.perKmFromKm)
+    }
+
+    @Test
     fun issuesOneInvoicePerTripAndRecordsPayment() {
         val meter = Meter("il-2026-04")
         meter.hire(t0, false)

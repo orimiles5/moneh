@@ -142,3 +142,37 @@ extension TripStore {
             .sorted { $0.openedAt > $1.openedAt }
     }
 }
+
+/// One change to what decides the fare or names the taxi (spec 2018 §7.3, Annex C).
+struct SealEntry: Codable, Equatable {
+    enum Kind: String, Codable {
+        case tariff, licence
+    }
+
+    let recordedAt: Date
+    let kind: Kind
+    let value: String
+}
+
+extension TripStore {
+    private var sealFile: URL {
+        directory.appending(path: "seal.json")
+    }
+
+    /// Every change ever recorded, oldest first. There is no way to remove one.
+    func sealLog() -> [SealEntry] {
+        (try? Data(contentsOf: sealFile)).flatMap { try? JSONDecoder().decode([SealEntry].self, from: $0) } ?? []
+    }
+
+    /// Appends [value] unless it is already the latest of its kind.
+    func recordSeal(_ kind: SealEntry.Kind, _ value: String, at date: Date) {
+        var log = sealLog()
+        guard log.last(where: { $0.kind == kind })?.value != value else { return }
+        log.append(SealEntry(recordedAt: date, kind: kind, value: value))
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try? JSONEncoder().encode(log).write(
+            to: sealFile,
+            options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication]
+        )
+    }
+}
