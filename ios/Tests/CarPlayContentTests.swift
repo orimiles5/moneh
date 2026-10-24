@@ -30,6 +30,6 @@ struct CarPlayContentTests {
 
     @Test func idleShowsTheTariffInForceNow() {
         let content = CarPlayContent(reading: .idle, currentRateId: "C", locale: english)
-        #expect(content.items[1].detail == "Tariff C")
+        #expect(content.items[1].detail == "Tariff 3")
     }
 }

@@ -619,13 +619,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Invoice no. %@"
+            "value": "Document no. %@"
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "חשבונית מס׳ %@"
+            "value": "מספר מסמך %@"
           }
         }
       }

@@ -143,16 +143,20 @@ struct ReceiptSlot: View {
                     .fill(Palette.ink.color)
                     .frame(height: 6)
                     .zIndex(1)
-                ReceiptCard(reading: reading)
-                    .padding(.horizontal, Spacing.small)
-                    .offset(y: printed ? 0 : -600)
-                    .clipped()
+                // The invoice can be taller than the screen; it scrolls, the payment buttons stay put.
+                ScrollView {
+                    ReceiptCard(reading: reading)
+                        .padding(.horizontal, Spacing.small)
+                        .offset(y: printed ? 0 : -600)
+                }
+                .scrollBounceBehavior(.basedOnSize)
+                .clipped()
             }
-            .clipped()
-            Spacer(minLength: 0)
             // Payment still takes tolls and discounts (spec 2018 §8.2.4, §9.10).
-            PillButton("receipt.extrasAndDiscount", style: .quiet, action: onExtras)
-            ReceiptShareButton(reading: reading)
+            HStack(spacing: Spacing.medium) {
+                PillButton("receipt.extrasAndDiscount", style: .quiet, action: onExtras)
+                ReceiptShareButton(reading: reading)
+            }
             HStack(spacing: Spacing.medium) {
                 PillButton("receipt.paidCash", style: .accent) { onPaid("cash") }
                 PillButton("receipt.paidCard", style: .accent) { onPaid("card") }
