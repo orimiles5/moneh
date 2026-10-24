@@ -33,14 +33,17 @@ fun computeFare(
     val subtotal = starting + time + distance + extras
     val vatBasisPoints = if (hired.vatExempt) 0 else tariff.vatBasisPoints
     val withVat = BASIS_POINTS_PER_WHOLE + vatBasisPoints
-    val numerator = subtotal * withVat + passThrough * UNITS * BASIS_POINTS_PER_WHOLE
+    val undiscounted = subtotal * withVat + passThrough * UNITS * BASIS_POINTS_PER_WHOLE
     val denominator = UNITS * BASIS_POINTS_PER_WHOLE
+    val discounted = discount(subtotal * withVat, undiscounted, denominator, meter.discount, hired.agreedPriceMinorUnits)
+    val numerator = undiscounted - discounted
     val exact = roundHalfUp(numerator, denominator)
     val total = roundToTenAgorot(numerator, denominator)
     val startingLine = roundHalfUp(starting, UNITS)
     val timeLine = roundHalfUp(time, UNITS)
     val distanceLine = roundHalfUp(distance, UNITS)
     val extrasLine = roundHalfUp(extras, UNITS)
+    val discountLine = roundHalfUp(discounted, UNITS * withVat)
 
     return FareBreakdown(
         tariffId = tariff.id,
@@ -49,16 +52,40 @@ fun computeFare(
         distanceCharge = Money(distanceLine),
         extras = Money(extrasLine),
         // Absorbs the line items' rounding (at most a few agorot) so a printed breakdown always adds up to the total.
-        vat = Money(exact - passThrough - startingLine - timeLine - distanceLine - extrasLine),
+        discount = Money(discountLine),
+        vat = Money(exact - passThrough - startingLine - timeLine - distanceLine - extrasLine + discountLine),
         passThrough = Money(passThrough),
         rounding = Money(total - exact),
         total = Money(total),
         displayTotal = Money(numerator / (denominator * TEN_AGOROT) * TEN_AGOROT),
+        agreedPrice = hired.agreedPriceMinorUnits?.let(::Money),
         displayFare = Money((starting + time + distance) * withVat / (denominator * TEN_AGOROT) * TEN_AGOROT),
         displayExtras = Money(roundHalfUp(extras * withVat, denominator) + passThrough),
         chargedTime = meter.chargedMs.milliseconds,
         distanceMetres = meter.metres,
     )
+}
+
+/**
+ * The discount in [numerator] units: the latest discount (spec 2018 §9.10), then, if the fare still exceeds an agreed price,
+ * the difference (§9.9). Neither takes off more than [fare], the VAT-inclusive charges before tolls.
+ */
+private fun discount(
+    fare: Long,
+    numerator: Long,
+    denominator: Long,
+    discount: TripEvent.DiscountSet?,
+    agreedPrice: Long?,
+): Long {
+    val requested =
+        when {
+            discount?.basisPoints != null -> fare * discount.basisPoints / BASIS_POINTS_PER_WHOLE
+            discount?.amountMinorUnits != null -> discount.amountMinorUnits * denominator
+            else -> 0
+        }
+    var off = minOf(requested, fare)
+    if (agreedPrice != null) off = maxOf(off, numerator - agreedPrice * denominator)
+    return off.coerceIn(0, fare)
 }
 
 /** Accumulates exact charges event by event. */
@@ -73,6 +100,7 @@ private class Meter(
     var chargedMs = 0L
     var metres = 0L
     private var runningSince: Instant? = null
+    var discount: TripEvent.DiscountSet? = null
 
     /** Per extra, the charges in force, latest last, so a removal cancels exactly what the latest addition charged. */
     private val charged = mutableMapOf<String, ArrayDeque<Charge>>()
@@ -92,6 +120,7 @@ private class Meter(
             }
             is TripEvent.ExtraAdded -> addExtra(event)
             is TripEvent.ExtraRemoved -> removeExtra(event)
+            is TripEvent.DiscountSet -> discount = event
             is TripEvent.Settled -> Unit
         }
     }

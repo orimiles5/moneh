@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MeterActions {
     var start: () -> Void = {}
+    var startAtAgreedPrice: () -> Void = {}
     var resume: () -> Void = {}
     var stop: () -> Void = {}
     var newTrip: () -> Void = {}
@@ -25,7 +26,7 @@ struct MeterScreen: View {
     var body: some View {
         Group {
             if reading.phase == .stopped {
-                ReceiptSlot(reading: reading, onNewTrip: actions.newTrip)
+                ReceiptSlot(reading: reading, onNewTrip: actions.newTrip, onExtras: actions.showExtras)
             } else if verticalSizeClass == .compact {
                 // Landscape, as on a dashboard mount: fare on the leading side, controls on the trailing side.
                 HStack(spacing: Spacing.xLarge) {
@@ -134,6 +135,7 @@ struct MeterScreen: View {
         VStack(spacing: Spacing.medium) {
             switch reading.phase {
             case .idle, .settled:
+                PillButton("meter.agreedPrice", style: .quiet, action: actions.startAtAgreedPrice)
                 PillButton("meter.start", style: .accent, action: actions.start)
             case .hired:
                 PillButton("meter.extras", style: .quiet, action: actions.showExtras)

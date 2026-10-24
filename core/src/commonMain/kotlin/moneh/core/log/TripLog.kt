@@ -57,12 +57,17 @@ class TripLog private constructor(
 internal fun encode(event: TripEvent): String {
     val fields =
         when (event) {
-            is TripEvent.Hired -> listOf("Hired", event.tariffVersion, if (event.vatExempt) "1" else "0")
+            // The agreed price is appended only when set, so logs written before it existed keep their encoding.
+            is TripEvent.Hired ->
+                listOf("Hired", event.tariffVersion, if (event.vatExempt) "1" else "0") +
+                    listOfNotNull(event.agreedPriceMinorUnits?.toString())
             is TripEvent.Moved -> listOf("Moved", event.metres.toString())
             is TripEvent.Paused -> listOf("Paused")
             is TripEvent.Resumed -> listOf("Resumed")
             is TripEvent.ExtraAdded -> listOf("ExtraAdded", event.extraId, event.amountMinorUnits?.toString() ?: "")
             is TripEvent.ExtraRemoved -> listOf("ExtraRemoved", event.extraId)
+            is TripEvent.DiscountSet ->
+                listOf("DiscountSet", event.basisPoints?.toString() ?: "", event.amountMinorUnits?.toString() ?: "")
             is TripEvent.Stopped -> listOf("Stopped")
             is TripEvent.Settled -> listOf("Settled")
         }
@@ -79,12 +84,13 @@ internal fun decode(encoded: String): TripEvent {
 
     fun arg(index: Int) = requireNotNull(args.getOrNull(index)) { "Missing field $index: $encoded" }
     return when (type) {
-        "Hired" -> TripEvent.Hired(at, arg(0), arg(1) == "1")
+        "Hired" -> TripEvent.Hired(at, arg(0), arg(1) == "1", args.getOrNull(2)?.toLong())
         "Moved" -> TripEvent.Moved(at, arg(0).toLong())
         "Paused" -> TripEvent.Paused(at)
         "Resumed" -> TripEvent.Resumed(at)
         "ExtraAdded" -> TripEvent.ExtraAdded(at, arg(0), arg(1).ifEmpty { null }?.toLong())
         "ExtraRemoved" -> TripEvent.ExtraRemoved(at, arg(0))
+        "DiscountSet" -> TripEvent.DiscountSet(at, arg(0).ifEmpty { null }?.toInt(), arg(1).ifEmpty { null }?.toLong())
         "Stopped" -> TripEvent.Stopped(at)
         "Settled" -> TripEvent.Settled(at)
         else -> throw IllegalArgumentException("Unknown event $type")

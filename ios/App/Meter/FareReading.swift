@@ -18,6 +18,8 @@ struct FareReading: Equatable {
     var timeCharge: Int64
     var distanceCharge: Int64
     var extras: Int64
+    var discount: Int64
+    var agreedPrice: Int64
     var vat: Int64
     var passThrough: Int64
     var rounding: Int64
@@ -32,7 +34,8 @@ struct FareReading: Equatable {
     static let idle = FareReading(
         phase: .idle, currencyCode: "ILS", rateId: "A", displayTotal: 0, displayFare: 0, displayExtras: 0, total: 0,
         startingFare: 0, timeCharge: 0,
-        distanceCharge: 0, extras: 0, vat: 0, passThrough: 0, rounding: 0, elapsed: .zero, distanceMetres: 0,
+        distanceCharge: 0, extras: 0, discount: 0, agreedPrice: 0, vat: 0, passThrough: 0, rounding: 0, elapsed: .zero,
+        distanceMetres: 0,
         vatExempt: false,
         vatBasisPoints: 1800, startedAt: nil, stoppedAt: nil, logHead: ""
     )
@@ -52,6 +55,8 @@ extension FareReading {
             timeCharge: reading.timeCharge,
             distanceCharge: reading.distanceCharge,
             extras: reading.extras,
+            discount: reading.discount,
+            agreedPrice: reading.agreedPrice,
             vat: reading.vat,
             passThrough: reading.passThrough,
             rounding: reading.rounding,

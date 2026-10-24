@@ -99,6 +99,9 @@ data class Tariff(
             rule.bands.forEach { require(it.rate in rates) { "Unknown rate ${it.rate}" } }
         }
         require(extras.values.all { (it.price ?: 0) >= 0 }) { "Negative extra price" }
+        // Spec 2018 Annex A, note 2: at most 18 extras, each at most 99.99 ₪ (checked here before VAT, and on entry for tolls).
+        require(extras.size <= MAX_EXTRAS) { "At most $MAX_EXTRAS extras" }
+        require(extras.values.all { (it.price ?: 0) <= MAX_EXTRA_PRICE }) { "Extra price above 99.99" }
     }
 
     /** The rate id that applies at [instant]. */
@@ -123,3 +126,8 @@ data class Tariff(
 
 private const val SECONDS_PER_DAY = 86_400
 const val BASIS_POINTS_PER_WHOLE = 10_000
+
+const val MAX_EXTRAS = 18
+
+/** 99.99 ₪, the most a single extra may cost (spec 2018 Annex A, note 2). */
+const val MAX_EXTRA_PRICE = 9_999L

@@ -24,6 +24,9 @@ struct ReceiptCard: View {
                 if reading.extras > 0 {
                     line("receipt.extras", reading.extras)
                 }
+                if reading.discount > 0 {
+                    line("receipt.discount", -reading.discount)
+                }
                 if reading.vatExempt {
                     line("receipt.vatExempt", 0)
                 } else {
@@ -34,6 +37,9 @@ struct ReceiptCard: View {
                 }
                 if reading.rounding != 0 {
                     line("receipt.rounding", reading.rounding)
+                }
+                if reading.agreedPrice > 0 {
+                    line("receipt.agreedPrice", reading.agreedPrice)
                 }
             }
             .font(Typography.body)
@@ -104,14 +110,21 @@ struct ReceiptCard: View {
 struct ReceiptSlot: View {
     let reading: FareReading
     let onNewTrip: () -> Void
+    let onExtras: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var printed: Bool
 
     /// [alreadyPrinted] skips the slide-out, for snapshots.
-    init(reading: FareReading, onNewTrip: @escaping () -> Void, alreadyPrinted: Bool = false) {
+    init(
+        reading: FareReading,
+        onNewTrip: @escaping () -> Void,
+        onExtras: @escaping () -> Void = {},
+        alreadyPrinted: Bool = false
+    ) {
         self.reading = reading
         self.onNewTrip = onNewTrip
+        self.onExtras = onExtras
         _printed = State(initialValue: alreadyPrinted)
     }
 
@@ -132,6 +145,8 @@ struct ReceiptSlot: View {
             }
             .clipped()
             Spacer(minLength: 0)
+            // Payment still takes tolls and discounts (spec 2018 §8.2.4, §9.10).
+            PillButton("receipt.extrasAndDiscount", style: .quiet, action: onExtras)
             ReceiptShareButton(reading: reading)
             PillButton("meter.newTrip", style: .accent, action: onNewTrip)
         }

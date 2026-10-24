@@ -130,5 +130,9 @@ class MeterTest {
         assertTrue(meter.removeExtra(t0 + minute, "booking"))
         assertFalse(meter.removeExtra(t0 + minute, "booking"))
         assertEquals(0, Meter.restore(meter.entries)?.extraCount("booking"))
+        assertFalse(meter.addExtraAmount(t0 + minute, "expressLane", 10_000), "a single extra is at most 99.99")
+        assertFalse(meter.discountPercent(t0 + minute, 0))
+        assertTrue(meter.discountAmount(t0 + minute, 300))
+        assertEquals(300, Meter.restore(meter.entries)?.reading(t0 + minute)?.discount, "Eilat: no VAT to take out")
     }
 }

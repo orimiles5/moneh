@@ -15,12 +15,16 @@ struct ExtrasSheet: View {
     let onAdd: (String) -> Void
     let onAddAmount: (String, Int64) -> Void
     let onRemove: (String) -> Void
+    let onDiscountPercent: (Int32) -> Void
+    let onDiscountAmount: (Int64) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.locale) private var locale
     @State private var amounts: [String: Decimal] = [:]
     @State private var added = 0
     @State private var removed = 0
+    @State private var discountIsPercent = true
+    @State private var discount: Decimal?
 
     var body: some View {
         NavigationStack {
@@ -59,6 +63,34 @@ struct ExtrasSheet: View {
                     } footer: {
                         Text("extras.amount.hint")
                     }
+                }
+                Section {
+                    Picker("discount.kind", selection: $discountIsPercent) {
+                        Text("discount.percent").tag(true)
+                        Text("discount.amount").tag(false)
+                    }
+                    .pickerStyle(.segmented)
+                    HStack {
+                        if discountIsPercent {
+                            TextField("discount.percent", value: $discount, format: .number)
+                                .keyboardType(.decimalPad)
+                        } else {
+                            TextField("discount.amount", value: $discount, format: .currency(code: currencyCode))
+                                .keyboardType(.decimalPad)
+                        }
+                        Button("discount.apply", action: applyDiscount)
+                            .font(Typography.label)
+                            .buttonStyle(.borderedProminent)
+                            .tint(Palette.accent.color)
+                            .foregroundStyle(Palette.onAccent.color)
+                            .disabled(!discountIsValid)
+                    }
+                    .font(Typography.body)
+                    .frame(minHeight: minimumTouchTarget)
+                } header: {
+                    Text("discount.title")
+                } footer: {
+                    Text("discount.hint")
                 }
             }
             .navigationTitle("extras.title")
@@ -100,6 +132,22 @@ struct ExtrasSheet: View {
         FareFormat.string(minorUnits: minorUnits, currencyCode: currencyCode, locale: locale)
     }
 
+    private var discountIsValid: Bool {
+        guard let discount, discount > 0 else { return false }
+        return !discountIsPercent || discount <= 100
+    }
+
+    private func applyDiscount() {
+        guard let discount, discountIsValid else { return }
+        if discountIsPercent {
+            onDiscountPercent(Int32(FareFormat.minorUnits(discount))) // percent x 100 = basis points
+        } else {
+            onDiscountAmount(FareFormat.minorUnits(discount))
+        }
+        self.discount = nil
+        added += 1
+    }
+
     private func remove(_ id: String) {
         onRemove(id)
         removed += 1
@@ -111,9 +159,7 @@ struct ExtrasSheet: View {
 
     private func addAmount(_ id: String) {
         guard let amount = amounts[id], amount > 0 else { return }
-        // ponytail: two minor-unit digits, as in FareFormat.
-        let minorUnits = NSDecimalNumber(decimal: amount * 100).rounding(accordingToBehavior: nil).int64Value
-        onAddAmount(id, minorUnits)
+        onAddAmount(id, FareFormat.minorUnits(amount))
         amounts[id] = nil
         added += 1
     }

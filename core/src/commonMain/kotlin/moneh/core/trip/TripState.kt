@@ -1,5 +1,6 @@
 package moneh.core.trip
 
+import moneh.core.tariff.BASIS_POINTS_PER_WHOLE
 import kotlin.time.Instant
 
 /**
@@ -17,7 +18,11 @@ sealed interface TripState {
             at: Instant,
             tariffVersion: String,
             vatExempt: Boolean = false,
-        ) = Hired(listOf(TripEvent.Hired(at, tariffVersion, vatExempt)))
+            agreedPriceMinorUnits: Long? = null,
+        ): Hired {
+            require(agreedPriceMinorUnits == null || agreedPriceMinorUnits > 0) { "Agreed price must be positive" }
+            return Hired(listOf(TripEvent.Hired(at, tariffVersion, vatExempt, agreedPriceMinorUnits)))
+        }
     }
 
     data class Hired internal constructor(
@@ -41,6 +46,12 @@ sealed interface TripState {
             at: Instant,
             extraId: String,
         ) = Hired(events.appendRemoval(at, extraId))
+
+        fun setDiscount(
+            at: Instant,
+            basisPoints: Int? = null,
+            amountMinorUnits: Long? = null,
+        ) = Hired(events.appendDiscount(TripEvent.DiscountSet(at, basisPoints, amountMinorUnits)))
 
         fun pause(at: Instant) = Paused(events.append(TripEvent.Paused(at)))
 
@@ -81,6 +92,12 @@ sealed interface TripState {
             extraId: String,
         ) = Stopped(events.appendRemoval(at, extraId))
 
+        fun setDiscount(
+            at: Instant,
+            basisPoints: Int? = null,
+            amountMinorUnits: Long? = null,
+        ) = Stopped(events.appendDiscount(TripEvent.DiscountSet(at, basisPoints, amountMinorUnits)))
+
         fun settle(at: Instant) = Settled(events.append(TripEvent.Settled(at)))
 
         /** The passenger rides on: back to hired at the same tariff (spec 2018 §8.1.7). */
@@ -102,6 +119,15 @@ private fun List<TripEvent>.appendRemoval(
 ): List<TripEvent> {
     require(extraCount(extraId) > 0) { "No $extraId to remove" }
     return append(TripEvent.ExtraRemoved(at, extraId))
+}
+
+private fun List<TripEvent>.appendDiscount(discount: TripEvent.DiscountSet): List<TripEvent> {
+    val percent = discount.basisPoints
+    val amount = discount.amountMinorUnits
+    require((percent == null) != (amount == null)) { "A discount is a percentage or an amount" }
+    require(percent == null || percent in 1..BASIS_POINTS_PER_WHOLE) { "Discount out of range: $percent" }
+    require(amount == null || amount > 0) { "Discount must be positive" }
+    return append(discount)
 }
 
 private fun List<TripEvent>.append(event: TripEvent): List<TripEvent> {

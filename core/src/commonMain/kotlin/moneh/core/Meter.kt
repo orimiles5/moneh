@@ -6,6 +6,7 @@ import moneh.core.fare.computeFare
 import moneh.core.log.TripLog
 import moneh.core.log.decode
 import moneh.core.tariff.BASIS_POINTS_PER_WHOLE
+import moneh.core.tariff.MAX_EXTRA_PRICE
 import moneh.core.tariff.Tariff
 import moneh.core.tariff.Tariffs
 import moneh.core.trip.TripEvent
@@ -29,6 +30,10 @@ data class MeterReading(
     val timeCharge: Long,
     val distanceCharge: Long,
     val extras: Long,
+    /** Discount taken off, before VAT like the other lines. */
+    val discount: Long,
+    /** The price agreed before the trip, or 0. */
+    val agreedPrice: Long,
     val vat: Long,
     val passThrough: Long,
     /** Final rounding to 0.10 ₪, so the receipt's lines add up to [total]. */
@@ -111,7 +116,45 @@ class Meter private constructor(
     fun hire(
         atMs: Long,
         vatExempt: Boolean,
-    ): Boolean = transition { (it as? TripState.Idle)?.hire(at(atMs), tariff.id, vatExempt) }.also { if (it) tracker = DistanceTracker() }
+    ): Boolean = hire(atMs, vatExempt, null)
+
+    /** A trip at a price agreed beforehand (spec 2018 §9.9): the passenger pays the lower of it and the fare. */
+    fun hireAtAgreedPrice(
+        atMs: Long,
+        vatExempt: Boolean,
+        agreedPriceMinorUnits: Long,
+    ): Boolean = agreedPriceMinorUnits > 0 && hire(atMs, vatExempt, agreedPriceMinorUnits)
+
+    private fun hire(
+        atMs: Long,
+        vatExempt: Boolean,
+        agreedPrice: Long?,
+    ) = transition { (it as? TripState.Idle)?.hire(at(atMs), tariff.id, vatExempt, agreedPrice) }
+        .also { if (it) tracker = DistanceTracker() }
+
+    /** A percentage discount (spec 2018 §9.10), in hired or payment; replaces any earlier discount. 1000 = 10%. */
+    fun discountPercent(
+        atMs: Long,
+        basisPoints: Int,
+    ) = basisPoints in 1..BASIS_POINTS_PER_WHOLE && setDiscount(atMs, basisPoints, null)
+
+    /** A discount of a fixed amount, capped at the fare; replaces any earlier discount. */
+    fun discountAmount(
+        atMs: Long,
+        amountMinorUnits: Long,
+    ) = amountMinorUnits > 0 && setDiscount(atMs, null, amountMinorUnits)
+
+    private fun setDiscount(
+        atMs: Long,
+        basisPoints: Int?,
+        amount: Long?,
+    ) = transition {
+        when (it) {
+            is TripState.Hired -> it.setDiscount(at(atMs), basisPoints, amount)
+            is TripState.Stopped -> it.setDiscount(at(atMs), basisPoints, amount)
+            else -> null
+        }
+    }
 
     /** Only for a trip paused by an earlier version; the meter states are free, hired and payment, with no pause. */
     fun resume(atMs: Long) = transition { (it as? TripState.Paused)?.resume(at(atMs)) }
@@ -139,7 +182,7 @@ class Meter private constructor(
         atMs: Long,
         extraId: String,
         amountMinorUnits: Long,
-    ) = amountMinorUnits >= 0 && addExtra(atMs, extraId, amountMinorUnits)
+    ) = amountMinorUnits in 0..MAX_EXTRA_PRICE && addExtra(atMs, extraId, amountMinorUnits)
 
     /** Cancels the latest addition of [extraId], for a mistaken tap. False if there is none. */
     fun removeExtra(
@@ -194,6 +237,8 @@ class Meter private constructor(
             timeCharge = fare.timeCharge.minorUnits,
             distanceCharge = fare.distanceCharge.minorUnits,
             extras = fare.extras.minorUnits,
+            discount = fare.discount.minorUnits,
+            agreedPrice = fare.agreedPrice?.minorUnits ?: 0,
             vat = fare.vat.minorUnits,
             passThrough = fare.passThrough.minorUnits,
             rounding = fare.rounding.minorUnits,
@@ -224,6 +269,8 @@ class Meter private constructor(
             timeCharge = 0,
             distanceCharge = 0,
             extras = 0,
+            discount = 0,
+            agreedPrice = 0,
             vat = 0,
             passThrough = 0,
             rounding = 0,

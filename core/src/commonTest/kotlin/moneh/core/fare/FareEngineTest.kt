@@ -163,6 +163,55 @@ class FareEngineTest {
         assertEquals(578 + 1200, fare(trip).displayExtras.minorUnits)
     }
 
+    private fun assertAddsUp(fare: moneh.core.fare.FareBreakdown) {
+        val lines = fare.startingFare + fare.timeCharge + fare.distanceCharge + fare.extras + fare.vat + fare.passThrough + fare.rounding
+        assertEquals(fare.total.minorUnits, lines.minorUnits - fare.discount.minorUnits)
+    }
+
+    private val tenMinutesFiveKm get() = hire("2026-10-18T10:00").move(at("2026-10-18T10:10"), 5_000)
+
+    @Test
+    fun percentDiscountComesOffTheFare() {
+        // 4166.58 less 10% = 3749.92 -> 37.50; the discount line is before VAT: 353.1 -> 3.53.
+        val fare = fare(tenMinutesFiveKm.setDiscount(at("2026-10-18T10:10"), basisPoints = 1000).stop(at("2026-10-18T10:10")))
+        assertEquals(3750, fare.total.minorUnits)
+        assertEquals(353, fare.discount.minorUnits)
+        assertAddsUp(fare)
+    }
+
+    @Test
+    fun latestDiscountCountsAndNeverExceedsTheFare() {
+        val trip =
+            tenMinutesFiveKm
+                .stop(at("2026-10-18T10:10"))
+                .setDiscount(at("2026-10-18T10:10"), basisPoints = 1000)
+                .setDiscount(at("2026-10-18T10:10"), amountMinorUnits = 100_000)
+                .addExtra(at("2026-10-18T10:10"), "expressLane", amountMinorUnits = 1200)
+        // The fare is fully discounted, the toll is still paid.
+        assertEquals(1200, fare(trip).total.minorUnits)
+        assertAddsUp(fare(trip))
+    }
+
+    @Test
+    fun agreedPriceCapsTheFare() {
+        val capped = TripState.Idle.hire(at("2026-10-18T10:00"), tariff.id, agreedPriceMinorUnits = 3000)
+        val cappedFare = fare(capped.move(at("2026-10-18T10:10"), 5_000).stop(at("2026-10-18T10:10")))
+        assertEquals(3000, cappedFare.total.minorUnits)
+        assertEquals(3000, cappedFare.agreedPrice?.minorUnits)
+        assertAddsUp(cappedFare)
+        // Agreed above the fare: the passenger pays the computed fare.
+        val above = TripState.Idle.hire(at("2026-10-18T10:00"), tariff.id, agreedPriceMinorUnits = 5000)
+        assertEquals(4170, fare(above.move(at("2026-10-18T10:10"), 5_000).stop(at("2026-10-18T10:10"))).total.minorUnits)
+    }
+
+    @Test
+    fun invalidDiscountsAreRejected() {
+        val trip = hire("2026-10-18T10:00")
+        assertFailsWith<IllegalArgumentException> { trip.setDiscount(at("2026-10-18T10:00")) }
+        assertFailsWith<IllegalArgumentException> { trip.setDiscount(at("2026-10-18T10:00"), basisPoints = 0) }
+        assertFailsWith<IllegalArgumentException> { trip.setDiscount(at("2026-10-18T10:00"), basisPoints = 10, amountMinorUnits = 10) }
+    }
+
     @Test
     fun finalSumGoesToTenAgorot() {
         // 4166.58 -> 4170 (6.58 agorot above 4160 is more than 5); 3193.08 -> 3190; 3531 (Eilat) -> 3530.

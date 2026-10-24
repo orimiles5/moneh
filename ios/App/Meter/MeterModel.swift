@@ -43,6 +43,18 @@ final class MeterModel {
         apply { $0.hire(atMs: $1, vatExempt: vatExempt) }
     }
 
+    func start(vatExempt: Bool, agreedPrice: Int64) {
+        apply { $0.hireAtAgreedPrice(atMs: $1, vatExempt: vatExempt, agreedPriceMinorUnits: agreedPrice) }
+    }
+
+    func discount(percentBasisPoints: Int32) {
+        apply { $0.discountPercent(atMs: $1, basisPoints: percentBasisPoints) }
+    }
+
+    func discount(amountMinorUnits: Int64) {
+        apply { $0.discountAmount(atMs: $1, amountMinorUnits: amountMinorUnits) }
+    }
+
     func resume() {
         apply { $0.resume(atMs: $1) }
     }

@@ -47,6 +47,10 @@ class TripLogTest {
         assertEquals(eilat, decode(encode(eilat)))
         val removed = TripEvent.ExtraRemoved(start, "booking")
         assertEquals(removed, decode(encode(removed)))
+        val agreed = TripEvent.Hired(start, "il-2026-04", agreedPriceMinorUnits = 5000)
+        assertEquals(agreed, decode(encode(agreed)))
+        listOf(TripEvent.DiscountSet(start, basisPoints = 1000), TripEvent.DiscountSet(start, amountMinorUnits = 250))
+            .forEach { assertEquals(it, decode(encode(it))) }
     }
 
     @Test
