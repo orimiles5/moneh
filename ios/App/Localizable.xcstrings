@@ -545,6 +545,23 @@
         }
       }
     },
+    "history.export": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export trips"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ייצוא נסיעות"
+          }
+        }
+      }
+    },
     "history.title": {
       "extractionState": "manual",
       "localizations": {
@@ -2511,6 +2528,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "נסיעות"
+          }
+        }
+      }
+    },
+    "trip.source": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trip source"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מקור הנסיעה"
+          }
+        }
+      }
+    },
+    "trip.source.booking": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Booking"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הזמנה"
+          }
+        }
+      }
+    },
+    "trip.source.institutional": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Institutional"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מוסדית"
+          }
+        }
+      }
+    },
+    "trip.source.street": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Street"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מהרחוב"
           }
         }
       }

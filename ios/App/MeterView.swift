@@ -10,6 +10,7 @@ struct MeterView: View {
     @State private var confirmingStop = false
     @State private var pastTrips: [PastTrip]?
     @State private var enteringAgreedPrice = false
+    @State private var tripSource = "street"
     @State private var shiftSheet: (shifts: [Shift], trips: [PastTrip])?
     @State private var shiftProblem: LocalizedStringKey?
 
@@ -19,8 +20,9 @@ struct MeterView: View {
             currentRateId: model.currentRateId,
             locationProblem: model.locationProblem,
             shiftOpen: model.shift != nil,
+            tripSource: $tripSource,
             actions: MeterActions(
-                start: { model.start(vatExempt: vatExempt) },
+                start: { start(agreedPrice: 0) },
                 startAtAgreedPrice: { enteringAgreedPrice = true },
                 resume: model.resume,
                 stop: { confirmingStop = true },
@@ -65,7 +67,7 @@ struct MeterView: View {
         }
         .sheet(isPresented: $enteringAgreedPrice) {
             AgreedPriceSheet(currencyCode: model.reading.currencyCode) {
-                model.start(vatExempt: vatExempt, agreedPrice: $0)
+                start(agreedPrice: $0)
             }
             .presentationDetents([.medium])
         }
@@ -93,6 +95,11 @@ struct MeterView: View {
             )
             .presentationDetents([.medium, .large])
         }
+    }
+
+    private func start(agreedPrice: Int64) {
+        model.start(vatExempt: vatExempt, source: tripSource, agreedPrice: agreedPrice)
+        tripSource = "street" // Most trips are hailed; the driver picks otherwise each time.
     }
 
     /// Spec 2018 §9.7: the driver is identified when the shift opens. Face ID or the device passcode stands in for the

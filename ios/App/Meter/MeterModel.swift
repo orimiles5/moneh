@@ -50,12 +50,9 @@ final class MeterModel {
         phaseChanged()
     }
 
-    func start(vatExempt: Bool) {
-        apply { $0.hire(atMs: $1, vatExempt: vatExempt) }
-    }
-
-    func start(vatExempt: Bool, agreedPrice: Int64) {
-        apply { $0.hireAtAgreedPrice(atMs: $1, vatExempt: vatExempt, agreedPriceMinorUnits: agreedPrice) }
+    /// [source] is "street", "booking" or "institutional" (spec 2018 §9.11); [agreedPrice] 0 for none (§9.9).
+    func start(vatExempt: Bool, source: String = "street", agreedPrice: Int64 = 0) {
+        apply { $0.hireFrom(atMs: $1, vatExempt: vatExempt, source: source, agreedPriceMinorUnits: agreedPrice) }
     }
 
     func discount(percentBasisPoints: Int32) {

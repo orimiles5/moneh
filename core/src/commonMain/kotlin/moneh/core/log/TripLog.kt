@@ -58,10 +58,10 @@ class TripLog private constructor(
 internal fun encode(event: TripEvent): String {
     val fields =
         when (event) {
-            // The agreed price is appended only when set, so logs written before it existed keep their encoding.
+            // Optional fields trail and empty ones at the end are dropped, so logs written before they existed keep their encoding.
             is TripEvent.Hired ->
                 listOf("Hired", event.tariffVersion, if (event.vatExempt) "1" else "0") +
-                    listOfNotNull(event.agreedPriceMinorUnits?.toString())
+                    listOf(event.agreedPriceMinorUnits?.toString() ?: "", event.source ?: "").dropLastWhile { it.isEmpty() }
             is TripEvent.Moved -> listOf("Moved", event.metres.toString())
             is TripEvent.Paused -> listOf("Paused")
             is TripEvent.Resumed -> listOf("Resumed")
@@ -90,7 +90,14 @@ internal fun decode(encoded: String): TripEvent {
 
     fun arg(index: Int) = requireNotNull(args.getOrNull(index)) { "Missing field $index: $encoded" }
     return when (type) {
-        "Hired" -> TripEvent.Hired(at, arg(0), arg(1) == "1", args.getOrNull(2)?.toLong())
+        "Hired" ->
+            TripEvent.Hired(
+                at,
+                arg(0),
+                arg(1) == "1",
+                args.getOrNull(2)?.ifEmpty { null }?.toLong(),
+                args.getOrNull(3)?.ifEmpty { null },
+            )
         "Moved" -> TripEvent.Moved(at, arg(0).toLong())
         "Paused" -> TripEvent.Paused(at)
         "Resumed" -> TripEvent.Resumed(at)

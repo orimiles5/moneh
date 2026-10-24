@@ -20,6 +20,7 @@ struct MeterScreen: View {
     let currentRateId: String
     let locationProblem: LocationFeed.Problem?
     var shiftOpen = true
+    var tripSource: Binding<String> = .constant("street")
     let actions: MeterActions
 
     @Environment(\.locale) private var locale
@@ -146,6 +147,12 @@ struct MeterScreen: View {
             switch reading.phase {
             case .idle, .settled:
                 if shiftOpen {
+                    Picker("trip.source", selection: tripSource) {
+                        Text("trip.source.street").tag("street")
+                        Text("trip.source.booking").tag("booking")
+                        Text("trip.source.institutional").tag("institutional")
+                    }
+                    .pickerStyle(.segmented)
                     PillButton("meter.agreedPrice", style: .quiet, action: actions.startAtAgreedPrice)
                     PillButton("meter.start", style: .accent, action: actions.start)
                 } else {

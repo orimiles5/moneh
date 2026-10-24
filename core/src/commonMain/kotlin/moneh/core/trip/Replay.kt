@@ -6,7 +6,15 @@ internal fun replay(events: List<TripEvent>): TripState =
         val next =
             when (state) {
                 is TripState.Idle ->
-                    (event as? TripEvent.Hired)?.let { state.hire(it.at, it.tariffVersion, it.vatExempt, it.agreedPriceMinorUnits) }
+                    (event as? TripEvent.Hired)?.let {
+                        state.hire(
+                            it.at,
+                            it.tariffVersion,
+                            it.vatExempt,
+                            it.agreedPriceMinorUnits,
+                            it.source,
+                        )
+                    }
                 is TripState.Hired -> state.apply(event)
                 is TripState.Paused -> state.apply(event)
                 is TripState.Stopped -> state.apply(event)

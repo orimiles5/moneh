@@ -10,6 +10,7 @@ import moneh.core.tariff.MAX_EXTRA_PRICE
 import moneh.core.tariff.Tariff
 import moneh.core.tariff.Tariffs
 import moneh.core.trip.PAYMENT_METHODS
+import moneh.core.trip.TRIP_SOURCES
 import moneh.core.trip.TripEvent
 import moneh.core.trip.TripState
 import moneh.core.trip.extraCount
@@ -60,6 +61,8 @@ data class MeterReading(
     val invoice: TripEvent.InvoiceIssued?,
     /** "cash", "card", or empty until the trip is settled with a method. */
     val paymentMethod: String,
+    /** "street", "booking", "institutional", or empty if not recorded. */
+    val source: String,
     val logHead: String,
 )
 
@@ -147,20 +150,30 @@ class Meter private constructor(
     fun hire(
         atMs: Long,
         vatExempt: Boolean,
-    ): Boolean = hire(atMs, vatExempt, null)
+    ): Boolean = hire(atMs, vatExempt, null, null)
+
+    /** A trip from [source] (spec 2018 §9.11): "street", "booking" or "institutional"; [agreedPriceMinorUnits] 0 for none. */
+    fun hireFrom(
+        atMs: Long,
+        vatExempt: Boolean,
+        source: String,
+        agreedPriceMinorUnits: Long,
+    ): Boolean =
+        source in TRIP_SOURCES && agreedPriceMinorUnits >= 0 && hire(atMs, vatExempt, agreedPriceMinorUnits.takeIf { it > 0 }, source)
 
     /** A trip at a price agreed beforehand (spec 2018 §9.9): the passenger pays the lower of it and the fare. */
     fun hireAtAgreedPrice(
         atMs: Long,
         vatExempt: Boolean,
         agreedPriceMinorUnits: Long,
-    ): Boolean = agreedPriceMinorUnits > 0 && hire(atMs, vatExempt, agreedPriceMinorUnits)
+    ): Boolean = agreedPriceMinorUnits > 0 && hire(atMs, vatExempt, agreedPriceMinorUnits, null)
 
     private fun hire(
         atMs: Long,
         vatExempt: Boolean,
         agreedPrice: Long?,
-    ) = transition { (it as? TripState.Idle)?.hire(at(atMs), tariff.id, vatExempt, agreedPrice) }
+        source: String?,
+    ) = transition { (it as? TripState.Idle)?.hire(at(atMs), tariff.id, vatExempt, agreedPrice, source) }
         .also { if (it) tracker = DistanceTracker() }
 
     /** A percentage discount (spec 2018 §9.10), in hired or payment; replaces any earlier discount. 1000 = 10%. */
@@ -308,6 +321,7 @@ class Meter private constructor(
             stoppedAtMs = stoppedAtMs,
             invoice = state.events.firstNotNullOfOrNull { it as? TripEvent.InvoiceIssued },
             paymentMethod = (state.events.last() as? TripEvent.Settled)?.paymentMethod ?: "",
+            source = hired.source ?: "",
             logHead = log.head,
         )
     }
@@ -345,6 +359,7 @@ class Meter private constructor(
             stoppedAtMs = 0,
             invoice = null,
             paymentMethod = "",
+            source = "",
             logHead = log.head,
         )
 

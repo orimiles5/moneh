@@ -19,9 +19,11 @@ sealed interface TripState {
             tariffVersion: String,
             vatExempt: Boolean = false,
             agreedPriceMinorUnits: Long? = null,
+            source: String? = null,
         ): Hired {
             require(agreedPriceMinorUnits == null || agreedPriceMinorUnits > 0) { "Agreed price must be positive" }
-            return Hired(listOf(TripEvent.Hired(at, tariffVersion, vatExempt, agreedPriceMinorUnits)))
+            require(source == null || source in TRIP_SOURCES) { "Unknown trip source $source" }
+            return Hired(listOf(TripEvent.Hired(at, tariffVersion, vatExempt, agreedPriceMinorUnits, source)))
         }
     }
 
@@ -135,6 +137,8 @@ private fun List<TripEvent>.appendRemoval(
 }
 
 val PAYMENT_METHODS = setOf("cash", "card")
+
+val TRIP_SOURCES = setOf("street", "booking", "institutional")
 
 private fun List<TripEvent>.appendDiscount(discount: TripEvent.DiscountSet): List<TripEvent> {
     val percent = discount.basisPoints

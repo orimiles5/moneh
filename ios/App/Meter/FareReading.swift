@@ -31,6 +31,7 @@ struct FareReading: Equatable {
     var stoppedAt: Date?
     var invoice: Invoice?
     var paymentMethod: String
+    var source: String
     var logHead: String
 
     struct Invoice: Equatable {
@@ -50,7 +51,7 @@ struct FareReading: Equatable {
         distanceMetres: 0,
         vatExempt: false,
         vatBasisPoints: 1800, startedAt: nil, stoppedAt: nil, invoice: nil,
-        paymentMethod: "", logHead: ""
+        paymentMethod: "", source: "", logHead: ""
     )
 }
 
@@ -91,6 +92,7 @@ extension FareReading {
                 )
             },
             paymentMethod: reading.paymentMethod,
+            source: reading.source,
             logHead: reading.logHead
         )
     }
