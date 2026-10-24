@@ -63,6 +63,8 @@ data class MeterReading(
     val paymentMethod: String,
     /** "street", "booking", "institutional", or empty if not recorded. */
     val source: String,
+    /** True once another trip ran alongside this one; the invoice says so. */
+    val shared: Boolean,
     val logHead: String,
 )
 
@@ -203,6 +205,17 @@ class Meter private constructor(
     /** Only for a trip paused by an earlier version; the meter states are free, hired and payment, with no pause. */
     fun resume(atMs: Long) = transition { (it as? TripState.Paused)?.resume(at(atMs)) }
 
+    /** Marks the trip as shared once another runs alongside it (spec 2018 §8.3.3); later calls change nothing. */
+    fun share(atMs: Long): Boolean =
+        state.events.none { it is TripEvent.Shared } &&
+            transition {
+                when (it) {
+                    is TripState.Hired -> it.share(at(atMs))
+                    is TripState.Stopped -> it.share(at(atMs))
+                    else -> null
+                }
+            }
+
     /** Hired to payment (תפוס → תשלום). */
     fun stop(atMs: Long) =
         transition {
@@ -322,6 +335,7 @@ class Meter private constructor(
             invoice = state.events.firstNotNullOfOrNull { it as? TripEvent.InvoiceIssued },
             paymentMethod = (state.events.last() as? TripEvent.Settled)?.paymentMethod ?: "",
             source = hired.source ?: "",
+            shared = state.events.any { it is TripEvent.Shared },
             logHead = log.head,
         )
     }
@@ -360,6 +374,7 @@ class Meter private constructor(
             invoice = null,
             paymentMethod = "",
             source = "",
+            shared = false,
             logHead = log.head,
         )
 

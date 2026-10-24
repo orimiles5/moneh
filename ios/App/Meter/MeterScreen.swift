@@ -10,6 +10,8 @@ struct MeterActions {
     var showSettings: () -> Void = {}
     var showHistory: () -> Void = {}
     var openShift: () -> Void = {}
+    var startShared: () -> Void = {}
+    var selectTrip: (Int) -> Void = { _ in }
     var showShift: () -> Void = {}
 }
 
@@ -20,6 +22,9 @@ struct MeterScreen: View {
     let currentRateId: String
     let locationProblem: LocationFeed.Problem?
     var shiftOpen = true
+    /// Shared trips (spec 2018 §8.3.3): how many run, and which one this screen shows.
+    var tripCount = 1
+    var activeTrip = 0
     var tripSource: Binding<String> = .constant("street")
     let actions: MeterActions
 
@@ -159,7 +164,16 @@ struct MeterScreen: View {
                     PillButton("shift.open", style: .accent, action: actions.openShift)
                 }
             case .hired:
-                PillButton("meter.extras", style: .quiet, action: actions.showExtras)
+                if tripCount > 1 {
+                    Picker("trip.active", selection: Binding(get: { activeTrip }, set: actions.selectTrip)) {
+                        ForEach(0 ..< tripCount, id: \.self) { Text("trip.number \($0 + 1)").tag($0) }
+                    }
+                    .pickerStyle(.segmented)
+                }
+                HStack(spacing: Spacing.medium) {
+                    PillButton("meter.extras", style: .quiet, action: actions.showExtras)
+                    PillButton("trip.shared.start", style: .quiet, action: actions.startShared)
+                }
                 PillButton("meter.stop", style: .danger, action: actions.stop)
             case .paused: // Only a trip paused by an earlier version.
                 HStack(spacing: Spacing.medium) {

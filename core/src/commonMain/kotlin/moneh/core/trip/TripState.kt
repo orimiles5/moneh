@@ -55,6 +55,8 @@ sealed interface TripState {
             amountMinorUnits: Long? = null,
         ) = Hired(events.appendDiscount(TripEvent.DiscountSet(at, basisPoints, amountMinorUnits)))
 
+        fun share(at: Instant) = Hired(events.append(TripEvent.Shared(at)))
+
         fun pause(at: Instant) = Paused(events.append(TripEvent.Paused(at)))
 
         fun stop(at: Instant) = Stopped(events.append(TripEvent.Stopped(at)))
@@ -99,6 +101,8 @@ sealed interface TripState {
             basisPoints: Int? = null,
             amountMinorUnits: Long? = null,
         ) = Stopped(events.appendDiscount(TripEvent.DiscountSet(at, basisPoints, amountMinorUnits)))
+
+        fun share(at: Instant) = Stopped(events.append(TripEvent.Shared(at)))
 
         fun settle(
             at: Instant,

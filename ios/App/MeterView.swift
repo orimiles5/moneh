@@ -20,6 +20,8 @@ struct MeterView: View {
             currentRateId: model.currentRateId,
             locationProblem: model.locationProblem,
             shiftOpen: model.shift != nil,
+            tripCount: model.tripCount,
+            activeTrip: model.activeTrip,
             tripSource: $tripSource,
             actions: MeterActions(
                 start: { start(agreedPrice: 0) },
@@ -31,6 +33,8 @@ struct MeterView: View {
                 showSettings: { showingSettings = true },
                 showHistory: { pastTrips = TripStore.standard.archivedTrips() },
                 openShift: openShift,
+                startShared: { model.startShared(vatExempt: vatExempt) },
+                selectTrip: model.select(trip:),
                 showShift: { shiftSheet = (TripStore.standard.allShifts(), TripStore.standard.archivedTrips()) }
             )
         )

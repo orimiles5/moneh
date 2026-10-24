@@ -72,6 +72,25 @@ class MeterTest {
     }
 
     @Test
+    fun sharedTripsRunIndependently() {
+        val first = Meter("il-2026-04")
+        val second = Meter("il-2026-04")
+        first.hire(t0, false)
+        drive(first, t0, 120)
+        second.hire(t0 + 2 * minute, false)
+        assertTrue(first.share(t0 + 2 * minute))
+        assertTrue(second.share(t0 + 2 * minute))
+        assertFalse(second.share(t0 + 2 * minute), "marked once")
+        drive(first, t0 + 2 * minute, 60, startLat = 32.08 + 121 * 0.0001)
+        drive(second, t0 + 2 * minute, 60, startLat = 32.08 + 121 * 0.0001)
+        first.stop(t0 + 3 * minute)
+        second.stop(t0 + 3 * minute)
+        assertTrue(first.reading(t0 + 3 * minute).shared)
+        assertTrue(first.reading(t0 + 3 * minute).total > second.reading(t0 + 3 * minute).total)
+        assertEquals(true, Meter.restore(second.entries)?.reading(t0 + 3 * minute)?.shared)
+    }
+
+    @Test
     fun reportsRatesWithVat() {
         val tariffA = Meter("il-2026-04").rateReport.single { it.rateId == "A" }
         // 10.56 x 1.18 = 12.4608; 1.65 x 1.18 = 1.947; 3.21 x 1.18 = 3.7878.

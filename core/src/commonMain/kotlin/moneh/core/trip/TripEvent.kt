@@ -53,6 +53,11 @@ sealed interface TripEvent {
         val amountMinorUnits: Long? = null,
     ) : TripEvent
 
+    /** Another trip ran at the same time from here on (spec 2018 §8.3.3); the invoice is marked as a shared trip. */
+    data class Shared(
+        override val at: Instant,
+    ) : TripEvent
+
     data class Stopped(
         override val at: Instant,
     ) : TripEvent

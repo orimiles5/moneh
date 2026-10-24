@@ -5,7 +5,8 @@ enum TripExport {
     static let columns = [
         "invoice", "trip_id", "started_at", "stopped_at", "distance_m", "charged_s", "tariff", "source",
         "starting_fare", "time_charge", "distance_charge", "extras", "discount", "vat", "tolls", "rounding", "total",
-        "agreed_price", "payment", "taxi", "licence", "dealer_name", "dealer_number", "driver_name", "driver_id",
+        "agreed_price", "payment", "shared", "taxi", "licence", "dealer_name", "dealer_number", "driver_name",
+        "driver_id",
     ]
 
     static func csv(_ trips: [FareReading]) -> String {
@@ -18,7 +19,7 @@ enum TripExport {
                 String(trip.startingFare), String(trip.timeCharge), String(trip.distanceCharge), String(trip.extras),
                 String(trip.discount), String(trip.vat), String(trip.passThrough), String(trip.rounding),
                 String(trip.total),
-                String(trip.agreedPrice), trip.paymentMethod,
+                String(trip.agreedPrice), trip.paymentMethod, trip.shared ? "1" : "0",
                 invoice?.taxiNumber ?? "", invoice?.licenceNumber ?? "", invoice?.dealerName ?? "",
                 invoice?.dealerNumber ?? "", invoice?.driverName ?? "", invoice?.driverId ?? "",
             ]

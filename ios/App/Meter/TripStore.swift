@@ -1,8 +1,8 @@
 import Foundation
 import MonehCore
 
-/// Persists the active trip's log after every event, so a trip survives the app being killed.
-/// Settled trips move to an archive folder, one file each.
+/// Persists each running trip's log after every event, so trips survive the app being killed.
+/// A trip's file is named by the hash of its first log entry; settled trips move to an archive folder, one file each.
 struct TripStore {
     struct StoredEntry: Codable, Equatable {
         let sequence: Int32
@@ -17,8 +17,13 @@ struct TripStore {
         directory: URL.applicationSupportDirectory.appending(path: "Trips", directoryHint: .isDirectory)
     )
 
-    private var currentFile: URL {
-        directory.appending(path: "current.json")
+    private func currentFile(_ tripId: String) -> URL {
+        directory.appending(path: "current-\(tripId).json")
+    }
+
+    /// A running trip's id: the hash of its first entry. Nil before the trip starts, when there is nothing to keep.
+    static func tripId(_ entries: [TripLog.Entry]) -> String? {
+        entries.first?.hash
     }
 
     private var archive: URL {
@@ -26,18 +31,32 @@ struct TripStore {
     }
 
     func saveCurrent(_ entries: [TripLog.Entry]) throws {
+        guard let tripId = Self.tripId(entries) else { return }
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         let stored = entries.map {
             StoredEntry(sequence: $0.sequence, encoded: $0.encoded, previousHash: $0.previousHash, hash: $0.hash)
         }
         try JSONEncoder().encode(stored).write(
-            to: currentFile,
+            to: currentFile(tripId),
             options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication]
         )
     }
 
-    func loadCurrent() -> [TripLog.Entry]? {
-        load(currentFile)
+    /// Every running trip, oldest first.
+    func loadCurrents() -> [[TripLog.Entry]] {
+        migrateSingleCurrent()
+        let files = (try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)) ?? []
+        return files
+            .filter { $0.lastPathComponent.hasPrefix("current-") }
+            .compactMap(load)
+            .sorted { ($0.first?.encoded ?? "") < ($1.first?.encoded ?? "") }
+    }
+
+    /// Earlier versions kept one running trip in current.json.
+    private func migrateSingleCurrent() {
+        let legacy = directory.appending(path: "current.json")
+        guard let tripId = load(legacy).flatMap(Self.tripId) else { return }
+        try? FileManager.default.moveItem(at: legacy, to: currentFile(tripId))
     }
 
     private func load(_ file: URL) -> [TripLog.Entry]? {
@@ -49,10 +68,11 @@ struct TripStore {
         }
     }
 
-    /// Moves the current trip into the archive, named by its final log hash.
-    func archiveCurrent(head: String) throws {
+    /// Moves a running trip into the archive, named by its final log hash.
+    func archiveCurrent(_ entries: [TripLog.Entry], head: String) throws {
+        guard let tripId = Self.tripId(entries) else { return }
         try FileManager.default.createDirectory(at: archive, withIntermediateDirectories: true)
-        try FileManager.default.moveItem(at: currentFile, to: archive.appending(path: "\(head).json"))
+        try FileManager.default.moveItem(at: currentFile(tripId), to: archive.appending(path: "\(head).json"))
     }
 
     // ponytail: replays every trip on each open; keep a summary index if history grows past a few thousand trips.

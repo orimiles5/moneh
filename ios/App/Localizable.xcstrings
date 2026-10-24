@@ -1648,6 +1648,23 @@
         }
       }
     },
+    "receipt.shared": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shared trip"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "נסיעה שיתופית"
+          }
+        }
+      }
+    },
     "receipt.startingFare": {
       "extractionState": "manual",
       "localizations": {
@@ -2528,6 +2545,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "נסיעות"
+          }
+        }
+      }
+    },
+    "trip.active": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trip shown"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הנסיעה המוצגת"
+          }
+        }
+      }
+    },
+    "trip.number %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trip %lld"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "נסיעה %lld"
+          }
+        }
+      }
+    },
+    "trip.shared.start": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shared trip"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "נסיעה שיתופית"
           }
         }
       }

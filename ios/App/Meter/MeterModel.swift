@@ -3,8 +3,9 @@ import MonehCore
 import Observation
 import UIKit
 
-/// Drives one trip at a time: forwards user actions and location fixes to the core Meter,
-/// persists after every change, and republishes the reading for the UI.
+/// Drives the trips: forwards user actions to the active trip and location fixes to every running one,
+/// persists after every change, and republishes the active trip's reading for the UI.
+/// Several trips run at once only as a shared trip (spec 2018 §8.3.3); the screen shows the active one.
 @MainActor
 @Observable
 final class MeterModel {
@@ -18,8 +19,16 @@ final class MeterModel {
     private(set) var locationProblem: LocationFeed.Problem?
     /// The open shift; trips start only within one.
     private(set) var shift: Shift?
+    /// How many trips are running and which one is shown.
+    private(set) var tripCount = 1
+    private(set) var activeTrip = 0
 
-    @ObservationIgnored private var meter: Meter
+    /// Never empty; when no trip runs, holds one idle meter.
+    @ObservationIgnored private var meters: [Meter] = []
+    private var meter: Meter {
+        meters[activeTrip]
+    }
+
     @ObservationIgnored private let store: TripStore
     @ObservationIgnored private let feed: LocationFeed?
     @ObservationIgnored private let liveActivity: LiveActivityController?
@@ -44,7 +53,11 @@ final class MeterModel {
         self.feed = feed
         self.liveActivity = liveActivity
         self.now = now
-        meter = store.loadCurrent().flatMap { Meter.companion.restore(entries: $0) } ?? Meter(tariffId: Self.tariffId)
+        meters = store.loadCurrents().compactMap { Meter.companion.restore(entries: $0) }
+        if meters.isEmpty {
+            meters = [Meter(tariffId: Self.tariffId)]
+        }
+        tripCount = meters.count
         shift = store.loadShift()
         store.recordSeal(.tariff, Self.tariffId, at: now())
         phaseChanged()
@@ -53,6 +66,29 @@ final class MeterModel {
     /// [source] is "street", "booking" or "institutional" (spec 2018 §9.11); [agreedPrice] 0 for none (§9.9).
     func start(vatExempt: Bool, source: String = "street", agreedPrice: Int64 = 0) {
         apply { $0.hireFrom(atMs: $1, vatExempt: vatExempt, source: source, agreedPriceMinorUnits: agreedPrice) }
+    }
+
+    /// Starts another trip alongside the running one; every trip running from now on is marked shared.
+    func startShared(vatExempt: Bool, source: String = "street") {
+        guard shift != nil, [.hired, .stopped].contains(reading.phase) else { return }
+        let added = Meter(tariffId: Self.tariffId)
+        let atMs = nowMs
+        guard added.hireFrom(atMs: atMs, vatExempt: vatExempt, source: source, agreedPriceMinorUnits: 0) else { return }
+        meters.append(added)
+        for trip in meters where [.hired, .stopped].contains(trip.phase) {
+            trip.share(atMs: atMs)
+            try? store.saveCurrent(trip.entries)
+        }
+        tripCount = meters.count
+        activeTrip = meters.count - 1
+        phaseChanged()
+    }
+
+    /// Shows trip [index]; the others keep running.
+    func select(trip index: Int) {
+        guard meters.indices.contains(index) else { return }
+        activeTrip = index
+        phaseChanged()
     }
 
     func discount(percentBasisPoints: Int32) {
@@ -101,7 +137,6 @@ final class MeterModel {
         apply { $0.removeExtra(atMs: $1, extraId: id) }
     }
 
-    /// Ends the trip and gets ready for the next one.
     /// Opens a shift for the identified driver (identification happens in the view). False without complete taxi
     /// details.
     @discardableResult
@@ -126,19 +161,25 @@ final class MeterModel {
 
     /// Closes the shift; only while free (spec 2018 §8.3.4).
     func closeShift() {
-        guard var closing = shift, reading.phase == .idle || reading.phase == .settled else { return }
+        guard var closing = shift, meters.count == 1,
+              reading.phase == .idle || reading.phase == .settled else { return }
         closing.closedAt = now()
         try? store.closeShift(closing)
         shift = nil
         phaseChanged()
     }
 
-    /// Payment to free, recording "cash" or "card" for the shift summary.
+    /// Payment to free, recording "cash" or "card" for the shift summary. Another shared trip, if any, becomes active.
     func settle(paymentMethod: String) {
         guard meter.settlePaid(atMs: nowMs, paymentMethod: paymentMethod) else { return }
         try? store.saveCurrent(meter.entries)
-        try? store.archiveCurrent(head: meter.reading(nowMs: nowMs).logHead)
-        meter = Meter(tariffId: Self.tariffId)
+        try? store.archiveCurrent(meter.entries, head: meter.reading(nowMs: nowMs).logHead)
+        meters.remove(at: activeTrip)
+        if meters.isEmpty {
+            meters = [Meter(tariffId: Self.tariffId)]
+        }
+        tripCount = meters.count
+        activeTrip = 0
         phaseChanged()
     }
 
@@ -205,15 +246,18 @@ final class MeterModel {
                 try? store.saveShift(open)
             }
         }
-        let moved = meter.location(
+        var moved = false
+        for trip in meters where trip.location(
             atMs: atMs,
             latitude: location.coordinate.latitude,
             longitude: location.coordinate.longitude,
             accuracyMetres: location.horizontalAccuracy,
             speedMetresPerSecond: location.speed
-        )
+        ) {
+            try? store.saveCurrent(trip.entries)
+            moved = true
+        }
         guard moved else { return }
-        persist()
         if FareReading.Phase(meter.phase) == reading.phase {
             refresh()
         } else {
@@ -225,7 +269,7 @@ final class MeterModel {
     private func phaseChanged() {
         refresh()
         // Payment keeps listening: driving on returns the meter to hired. An open shift counts every metre driven.
-        let tracking = shift != nil || [.hired, .paused, .stopped].contains(reading.phase)
+        let tracking = shift != nil || meters.contains { [.hired, .paused, .stopped].contains($0.phase) }
         UIApplication.shared.isIdleTimerDisabled = tracking
         if tracking {
             feed?.start(

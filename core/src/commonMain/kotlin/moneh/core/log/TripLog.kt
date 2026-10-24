@@ -69,6 +69,7 @@ internal fun encode(event: TripEvent): String {
             is TripEvent.ExtraRemoved -> listOf("ExtraRemoved", event.extraId)
             is TripEvent.DiscountSet ->
                 listOf("DiscountSet", event.basisPoints?.toString() ?: "", event.amountMinorUnits?.toString() ?: "")
+            is TripEvent.Shared -> listOf("Shared")
             is TripEvent.Stopped -> listOf("Stopped")
             is TripEvent.Settled -> listOf("Settled") + listOfNotNull(event.paymentMethod)
             is TripEvent.InvoiceIssued ->
@@ -104,6 +105,7 @@ internal fun decode(encoded: String): TripEvent {
         "ExtraAdded" -> TripEvent.ExtraAdded(at, arg(0), arg(1).ifEmpty { null }?.toLong())
         "ExtraRemoved" -> TripEvent.ExtraRemoved(at, arg(0))
         "DiscountSet" -> TripEvent.DiscountSet(at, arg(0).ifEmpty { null }?.toInt(), arg(1).ifEmpty { null }?.toLong())
+        "Shared" -> TripEvent.Shared(at)
         "Stopped" -> TripEvent.Stopped(at)
         "Settled" -> TripEvent.Settled(at, args.getOrNull(0))
         "InvoiceIssued" -> TripEvent.InvoiceIssued(at, arg(0).toLong(), arg(1), arg(2), arg(3), arg(4), arg(5), arg(6))
