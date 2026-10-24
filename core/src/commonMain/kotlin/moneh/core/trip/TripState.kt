@@ -98,7 +98,20 @@ sealed interface TripState {
             amountMinorUnits: Long? = null,
         ) = Stopped(events.appendDiscount(TripEvent.DiscountSet(at, basisPoints, amountMinorUnits)))
 
-        fun settle(at: Instant) = Settled(events.append(TripEvent.Settled(at)))
+        fun settle(
+            at: Instant,
+            paymentMethod: String? = null,
+        ): Settled {
+            require(paymentMethod == null || paymentMethod in PAYMENT_METHODS) { "Unknown payment method $paymentMethod" }
+            return Settled(events.append(TripEvent.Settled(at, paymentMethod)))
+        }
+
+        /** One invoice per trip, issued on first entering payment. */
+        fun issueInvoice(invoice: TripEvent.InvoiceIssued): Stopped {
+            require(events.none { it is TripEvent.InvoiceIssued }) { "Invoice already issued" }
+            require(invoice.number > 0) { "Invoice numbers start at 1" }
+            return Stopped(events.append(invoice))
+        }
 
         /** The passenger rides on: back to hired at the same tariff (spec 2018 §8.1.7). */
         fun resume(at: Instant) = Hired(events.append(TripEvent.Resumed(at)))
@@ -120,6 +133,8 @@ private fun List<TripEvent>.appendRemoval(
     require(extraCount(extraId) > 0) { "No $extraId to remove" }
     return append(TripEvent.ExtraRemoved(at, extraId))
 }
+
+val PAYMENT_METHODS = setOf("cash", "card")
 
 private fun List<TripEvent>.appendDiscount(discount: TripEvent.DiscountSet): List<TripEvent> {
     val percent = discount.basisPoints

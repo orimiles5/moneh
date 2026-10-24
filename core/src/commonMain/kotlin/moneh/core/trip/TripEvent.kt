@@ -55,7 +55,21 @@ sealed interface TripEvent {
         override val at: Instant,
     ) : TripEvent
 
+    /** [paymentMethod] is "cash" or "card", for the shift summary (spec 2018 §8.3.1); null if not recorded. */
     data class Settled(
         override val at: Instant,
+        val paymentMethod: String? = null,
+    ) : TripEvent
+
+    /** What the tax invoice needs beyond the fare (spec 2018 Annex A), fixed in the log when it is issued on entering payment. */
+    data class InvoiceIssued(
+        override val at: Instant,
+        val number: Long,
+        val taxiNumber: String,
+        val licenceNumber: String,
+        val dealerName: String,
+        val dealerNumber: String,
+        val driverName: String,
+        val driverId: String,
     ) : TripEvent
 }

@@ -5,7 +5,7 @@ struct MeterActions {
     var startAtAgreedPrice: () -> Void = {}
     var resume: () -> Void = {}
     var stop: () -> Void = {}
-    var newTrip: () -> Void = {}
+    var settle: (_ paymentMethod: String) -> Void = { _ in }
     var showExtras: () -> Void = {}
     var showSettings: () -> Void = {}
     var showHistory: () -> Void = {}
@@ -26,7 +26,7 @@ struct MeterScreen: View {
     var body: some View {
         Group {
             if reading.phase == .stopped {
-                ReceiptSlot(reading: reading, onNewTrip: actions.newTrip, onExtras: actions.showExtras)
+                ReceiptSlot(reading: reading, onPaid: actions.settle, onExtras: actions.showExtras)
             } else if verticalSizeClass == .compact {
                 // Landscape, as on a dashboard mount: fare on the leading side, controls on the trailing side.
                 HStack(spacing: Spacing.xLarge) {

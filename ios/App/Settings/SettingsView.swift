@@ -13,6 +13,9 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 Section {
+                    NavigationLink("profile.title") { ProfileForm() }
+                }
+                Section {
                     Toggle("settings.night", isOn: Binding(
                         get: { appearance == .night },
                         set: { appearance = $0 ? .night : .system }

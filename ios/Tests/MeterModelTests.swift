@@ -7,8 +7,19 @@ struct MeterModelTests {
     private let store = TripStore(directory: .temporaryDirectory.appending(path: UUID().uuidString))
     private var clock = Date(timeIntervalSince1970: 1_792_317_600) // Sunday 2026-10-18 10:00 in Israel
 
-    private func model(at date: Date) -> MeterModel {
-        MeterModel(store: store, feed: nil, liveActivity: nil, now: { date })
+    private func model(at date: Date, profile: IssuerProfile = IssuerProfile()) -> MeterModel {
+        var lastInvoice: Int64 = 0
+        return MeterModel(
+            store: store,
+            feed: nil,
+            liveActivity: nil,
+            now: { date },
+            profile: { profile },
+            nextInvoiceNumber: {
+                lastInvoice += 1
+                return lastInvoice
+            }
+        )
     }
 
     @Test func runsAndSettlesATrip() {
@@ -22,7 +33,7 @@ struct MeterModelTests {
         later.stop()
         // 10 minutes at tariff A: (1056 + 10 x 165) x 1.18 = 3193.08, rounded to 0.10 ₪
         #expect(later.reading.total == 3190)
-        later.settle()
+        later.settle(paymentMethod: "cash")
         #expect(later.reading.phase == .idle)
         #expect(store.archivedTripCount() == 1)
         #expect(store.loadCurrent() == nil)
@@ -48,7 +59,7 @@ struct MeterModelTests {
         let model = model(at: clock)
         model.start(vatExempt: false)
         model.stop()
-        model.settle()
+        model.settle(paymentMethod: "cash")
         let trips = store.archivedTrips()
         #expect(trips.count == 1)
         #expect(trips.first?.reading?.phase == .settled)
@@ -58,5 +69,31 @@ struct MeterModelTests {
         let text = try String(contentsOf: file, encoding: .utf8).replacingOccurrences(of: "Hired", with: "Hirex")
         try text.write(to: file, atomically: true, encoding: .utf8)
         #expect(store.archivedTrips().first?.reading == nil)
+    }
+
+    @Test func stoppingIssuesAnInvoiceOnlyWithCompleteDetails() {
+        let anonymous = model(at: clock)
+        anonymous.start(vatExempt: false)
+        anonymous.stop()
+        #expect(anonymous.reading.invoice == nil)
+        anonymous.settle(paymentMethod: "card")
+
+        var profile = IssuerProfile(
+            taxiNumber: "1234",
+            licenceNumber: "12-345-67",
+            driverName: "Driver",
+            driverId: "000000018"
+        )
+        profile.dealers = [IssuerProfile.Dealer(name: "Dealer", number: "512345678")]
+        let named = model(at: clock, profile: profile)
+        named.start(vatExempt: false)
+        named.stop()
+        #expect(named.reading.invoice?.number == 1)
+        #expect(named.reading.invoice?.driverId == "000000018")
+    }
+
+    @Test(arguments: [("000000018", true), ("000000019", false), ("12345678a", false), ("1234567890", false)])
+    func validatesIsraeliIds(id: String, valid: Bool) {
+        #expect(IsraeliID.isValid(id) == valid)
     }
 }

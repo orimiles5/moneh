@@ -121,7 +121,7 @@ private class Meter(
             is TripEvent.ExtraAdded -> addExtra(event)
             is TripEvent.ExtraRemoved -> removeExtra(event)
             is TripEvent.DiscountSet -> discount = event
-            is TripEvent.Settled -> Unit
+            is TripEvent.Settled, is TripEvent.InvoiceIssued -> Unit
         }
     }
 

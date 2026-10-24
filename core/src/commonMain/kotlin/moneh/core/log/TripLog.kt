@@ -54,6 +54,7 @@ class TripLog private constructor(
  * Canonical, versioned encoding. Never change an existing version's format: logs must verify forever.
  * Fields are length-prefixed ("<length>:<value>"), so no value can be confused with a separator.
  */
+@Suppress("CyclomaticComplexMethod") // One branch per event type.
 internal fun encode(event: TripEvent): String {
     val fields =
         when (event) {
@@ -69,12 +70,17 @@ internal fun encode(event: TripEvent): String {
             is TripEvent.DiscountSet ->
                 listOf("DiscountSet", event.basisPoints?.toString() ?: "", event.amountMinorUnits?.toString() ?: "")
             is TripEvent.Stopped -> listOf("Stopped")
-            is TripEvent.Settled -> listOf("Settled")
+            is TripEvent.Settled -> listOf("Settled") + listOfNotNull(event.paymentMethod)
+            is TripEvent.InvoiceIssued ->
+                with(event) {
+                    listOf("InvoiceIssued", number.toString(), taxiNumber, licenceNumber, dealerName, dealerNumber, driverName, driverId)
+                }
         }
     return (listOf(ENCODING_VERSION, event.at.toEpochMilliseconds().toString()) + fields).joinToString("") { "${it.length}:$it" }
 }
 
 /** Inverse of [encode]. Throws [IllegalArgumentException] for anything [encode] could not have produced. */
+@Suppress("CyclomaticComplexMethod", "MagicNumber") // One branch per event type; field positions of the v1 encoding.
 internal fun decode(encoded: String): TripEvent {
     val fields = splitFields(encoded)
     require(fields.size > HEADER_FIELDS - 1 && fields[0] == ENCODING_VERSION) { "Unsupported encoding: $encoded" }
@@ -92,7 +98,8 @@ internal fun decode(encoded: String): TripEvent {
         "ExtraRemoved" -> TripEvent.ExtraRemoved(at, arg(0))
         "DiscountSet" -> TripEvent.DiscountSet(at, arg(0).ifEmpty { null }?.toInt(), arg(1).ifEmpty { null }?.toLong())
         "Stopped" -> TripEvent.Stopped(at)
-        "Settled" -> TripEvent.Settled(at)
+        "Settled" -> TripEvent.Settled(at, args.getOrNull(0))
+        "InvoiceIssued" -> TripEvent.InvoiceIssued(at, arg(0).toLong(), arg(1), arg(2), arg(3), arg(4), arg(5), arg(6))
         else -> throw IllegalArgumentException("Unknown event $type")
     }.also { require(encode(it) == encoded) { "Non-canonical encoding: $encoded" } }
 }

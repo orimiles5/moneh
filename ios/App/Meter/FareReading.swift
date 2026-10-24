@@ -29,7 +29,19 @@ struct FareReading: Equatable {
     var vatBasisPoints: Int32
     var startedAt: Date?
     var stoppedAt: Date?
+    var invoice: Invoice?
+    var paymentMethod: String
     var logHead: String
+
+    struct Invoice: Equatable {
+        var number: Int64
+        var taxiNumber: String
+        var licenceNumber: String
+        var dealerName: String
+        var dealerNumber: String
+        var driverName: String
+        var driverId: String
+    }
 
     static let idle = FareReading(
         phase: .idle, currencyCode: "ILS", rateId: "A", displayTotal: 0, displayFare: 0, displayExtras: 0, total: 0,
@@ -37,7 +49,8 @@ struct FareReading: Equatable {
         distanceCharge: 0, extras: 0, discount: 0, agreedPrice: 0, vat: 0, passThrough: 0, rounding: 0, elapsed: .zero,
         distanceMetres: 0,
         vatExempt: false,
-        vatBasisPoints: 1800, startedAt: nil, stoppedAt: nil, logHead: ""
+        vatBasisPoints: 1800, startedAt: nil, stoppedAt: nil, invoice: nil,
+        paymentMethod: "", logHead: ""
     )
 }
 
@@ -66,6 +79,18 @@ extension FareReading {
             vatBasisPoints: reading.vatBasisPoints,
             startedAt: Date(epochMs: reading.startedAtMs),
             stoppedAt: Date(epochMs: reading.stoppedAtMs),
+            invoice: reading.invoice.map {
+                Invoice(
+                    number: $0.number,
+                    taxiNumber: $0.taxiNumber,
+                    licenceNumber: $0.licenceNumber,
+                    dealerName: $0.dealerName,
+                    dealerNumber: $0.dealerNumber,
+                    driverName: $0.driverName,
+                    driverId: $0.driverId
+                )
+            },
+            paymentMethod: reading.paymentMethod,
             logHead: reading.logHead
         )
     }

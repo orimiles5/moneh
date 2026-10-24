@@ -37,9 +37,14 @@ final class MeterScreenSnapshotTests: XCTestCase {
         reading.rounding = 3
         reading.total = 8020
         reading.startedAt = Date(timeIntervalSince1970: 1_792_317_600)
+        reading.stoppedAt = Date(timeIntervalSince1970: 1_792_317_600 + 872)
+        reading.invoice = FareReading.Invoice(
+            number: 128, taxiNumber: "4417", licenceNumber: "12-345-67", dealerName: "מוניות הדר",
+            dealerNumber: "512345678", driverName: "דנה כהן", driverId: "000000018"
+        )
         reading.logHead = "f9fbfa80ff0bb52867f60476cb2b24107e37acd0054d95951f23ee16e4f09e5b"
         assertAllVariants(reading) { reading in
-            ReceiptSlot(reading: reading, onNewTrip: {}, alreadyPrinted: true)
+            ReceiptSlot(reading: reading, onPaid: { _ in }, alreadyPrinted: true)
                 .padding(Spacing.large)
                 .background(Palette.background.color)
         }

@@ -9,6 +9,7 @@ import moneh.core.tariff.BASIS_POINTS_PER_WHOLE
 import moneh.core.tariff.MAX_EXTRA_PRICE
 import moneh.core.tariff.Tariff
 import moneh.core.tariff.Tariffs
+import moneh.core.trip.PAYMENT_METHODS
 import moneh.core.trip.TripEvent
 import moneh.core.trip.TripState
 import moneh.core.trip.extraCount
@@ -46,6 +47,10 @@ data class MeterReading(
     /** Epoch milliseconds; 0 until the trip starts or stops. */
     val startedAtMs: Long,
     val stoppedAtMs: Long,
+    /** Set once the invoice is issued on entering payment. */
+    val invoice: TripEvent.InvoiceIssued?,
+    /** "cash", "card", or empty until the trip is settled with a method. */
+    val paymentMethod: String,
     val logHead: String,
 )
 
@@ -171,6 +176,32 @@ class Meter private constructor(
 
     fun settle(atMs: Long) = transition { (it as? TripState.Stopped)?.settle(at(atMs)) }
 
+    /** Payment to free, recording how the passenger paid: "cash" or "card". */
+    fun settlePaid(
+        atMs: Long,
+        paymentMethod: String,
+    ) = paymentMethod in PAYMENT_METHODS && transition { (it as? TripState.Stopped)?.settle(at(atMs), paymentMethod) }
+
+    /** Fixes the invoice details in the log; once per trip, in payment. [number] comes from the device's invoice sequence. */
+    @Suppress("LongParameterList") // Annex A's fields, all required.
+    fun issueInvoice(
+        atMs: Long,
+        number: Long,
+        taxiNumber: String,
+        licenceNumber: String,
+        dealerName: String,
+        dealerNumber: String,
+        driverName: String,
+        driverId: String,
+    ): Boolean {
+        val stopped = state as? TripState.Stopped
+        val invoice = TripEvent.InvoiceIssued(at(atMs), number, taxiNumber, licenceNumber, dealerName, dealerNumber, driverName, driverId)
+        return stopped != null &&
+            number > 0 &&
+            stopped.events.none { it is TripEvent.InvoiceIssued } &&
+            transition { stopped.issueInvoice(invoice) }
+    }
+
     /** A fixed-price extra from the tariff. */
     fun addExtra(
         atMs: Long,
@@ -228,7 +259,8 @@ class Meter private constructor(
         return MeterReading(
             phase = phase,
             currency = tariff.currency,
-            rateId = rateIdAt(nowMs),
+            // Once the meter stops, the tariff is the last one used (spec 2018 Annex A, note 1).
+            rateId = rateIdAt(if (state is TripState.Stopped || state is TripState.Settled) stoppedAtMs else nowMs),
             displayTotal = fare.displayTotal.minorUnits,
             displayFare = fare.displayFare.minorUnits,
             displayExtras = fare.displayExtras.minorUnits,
@@ -247,14 +279,19 @@ class Meter private constructor(
             vatExempt = hired.vatExempt,
             vatBasisPoints = if (hired.vatExempt) 0 else tariff.vatBasisPoints,
             startedAtMs = hired.at.toEpochMilliseconds(),
-            stoppedAtMs =
-                state.events
-                    .lastOrNull { it is TripEvent.Stopped }
-                    ?.at
-                    ?.toEpochMilliseconds() ?: 0,
+            stoppedAtMs = stoppedAtMs,
+            invoice = state.events.firstNotNullOfOrNull { it as? TripEvent.InvoiceIssued },
+            paymentMethod = (state.events.last() as? TripEvent.Settled)?.paymentMethod ?: "",
             logHead = log.head,
         )
     }
+
+    private val stoppedAtMs: Long
+        get() =
+            state.events
+                .lastOrNull { it is TripEvent.Stopped }
+                ?.at
+                ?.toEpochMilliseconds() ?: 0
 
     private fun idleReading(nowMs: Long) =
         MeterReading(
@@ -280,6 +317,8 @@ class Meter private constructor(
             vatBasisPoints = tariff.vatBasisPoints,
             startedAtMs = 0,
             stoppedAtMs = 0,
+            invoice = null,
+            paymentMethod = "",
             logHead = log.head,
         )
 

@@ -20,7 +20,7 @@ struct MeterView: View {
                 startAtAgreedPrice: { enteringAgreedPrice = true },
                 resume: model.resume,
                 stop: { confirmingStop = true },
-                newTrip: model.settle,
+                settle: { model.settle(paymentMethod: $0) },
                 showExtras: { showingExtras = true },
                 showSettings: { showingSettings = true },
                 showHistory: { pastTrips = TripStore.standard.archivedTrips() }

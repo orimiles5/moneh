@@ -51,6 +51,10 @@ class TripLogTest {
         assertEquals(agreed, decode(encode(agreed)))
         listOf(TripEvent.DiscountSet(start, basisPoints = 1000), TripEvent.DiscountSet(start, amountMinorUnits = 250))
             .forEach { assertEquals(it, decode(encode(it))) }
+        listOf(
+            TripEvent.Settled(start, "cash"),
+            TripEvent.InvoiceIssued(start, 42, "1234", "12-345-67", "דוד: מוניות", "512345678", "Driver Name", "000000018"),
+        ).forEach { assertEquals(it, decode(encode(it))) }
     }
 
     @Test

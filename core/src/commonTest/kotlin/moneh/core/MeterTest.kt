@@ -72,6 +72,23 @@ class MeterTest {
     }
 
     @Test
+    fun issuesOneInvoicePerTripAndRecordsPayment() {
+        val meter = Meter("il-2026-04")
+        meter.hire(t0, false)
+        assertFalse(meter.issueInvoice(t0, 1, "1234", "12-345-67", "Dealer", "512345678", "Driver", "000000018"), "only in payment")
+        meter.stop(t0 + 10 * minute)
+        assertTrue(meter.issueInvoice(t0 + 10 * minute, 7, "1234", "12-345-67", "Dealer", "512345678", "Driver", "000000018"))
+        assertFalse(meter.issueInvoice(t0 + 10 * minute, 8, "1234", "12-345-67", "Dealer", "512345678", "Driver", "000000018"))
+        assertEquals(7, meter.reading(t0 + 20 * minute).invoice?.number)
+        assertEquals("A", meter.reading(t0 + 20 * 60 * minute).rateId, "the tariff stays the one in force at stop")
+        assertFalse(meter.settlePaid(t0 + 11 * minute, "cheque"))
+        assertTrue(meter.settlePaid(t0 + 11 * minute, "card"))
+        val restored = assertNotNull(Meter.restore(meter.entries))
+        assertEquals("card", restored.reading(t0 + 11 * minute).paymentMethod)
+        assertEquals("Driver", restored.reading(t0 + 11 * minute).invoice?.driverName)
+    }
+
+    @Test
     fun drivingOnDuringPaymentReturnsToHired() {
         val meter = Meter("il-2026-04")
         meter.hire(t0, false)
