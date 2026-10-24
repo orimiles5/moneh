@@ -40,12 +40,19 @@ Compliance can be tested by any lab accredited under the law (cover letter §13)
 
 **What does carry over:** the fare engine and tariffs (pure, tested, sourced), the tamper-evident trip log, local persistence, Hebrew UI, and the trip states (mapped onto פנוי/תפוס/תשלום).
 
-**Realistic paths to approval**
-1. **Phone as the driver's console for an approved device.** Pair Moneh over Bluetooth (spec 9.5 asks for BT) with an approved meter box that takes vehicle pulses, prints, and drives the roof sign. Approval stays with the box.
-2. **Build our own approved device.** Moneh runs on dedicated, locked-down hardware with a pulse input, printer and sign output, and goes through an accredited lab against this spec. That is a hardware company, not an app.
-3. **Stay an unregulated assistant.** Passenger fare estimates, a second display for the passenger, driver bookkeeping. Never the fare of record.
+**Decision (2026-10-24): the app replaces the device.** Taxis run Moneh only, with no meter hardware. The app implements every functional requirement of the spec (milestone "R Regulatory parity", issues #52–#63). Hardware-only requirements are replaced by software equivalents, to be agreed with the Ministry:
 
-**Before any of these:** ask the Ministry (public transport division) whether the 2018 spec is still current, whether a phone-based meter has any route at all, and which labs are accredited. Ask the Tax Authority what a computerized-system approval requires.
+| Hardware requirement | Proposed replacement |
+|---|---|
+| Printer, paper kept 7 years (§5.1, §7.2) | Digital tax invoice (share, SMS, email), stored 7 years |
+| Vehicle pulses and meter constant K (§8.1.4) | GPS fused with OBD-II vehicle speed; a per-vehicle calibration factor in place of K, logged in the seal log |
+| 12 V supply and environmental/EMC tests (§10–11) | Phone power and the phone's own certification; trip survives app kill and reboot |
+| Protection against changes (§5.1, reg. 485) | App Store signing, signed tariff files, hash-chained logs, seal log |
+| Marking with maker, model, serial (§6) | About screen with app version and a per-install meter ID |
+| Roof sign control (§9.8) | Out of scope until a connected sign exists |
+| Dedicated device used only as a meter (§5.1) | Open question for the Ministry |
+
+**Open with the Ministry:** ask the Ministry (public transport division) whether the 2018 spec is still current, whether a phone-based meter has any route at all, and which labs are accredited. Ask the Tax Authority what a computerized-system approval requires.
 
 ## Privacy
 
