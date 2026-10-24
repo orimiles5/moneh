@@ -5,11 +5,16 @@ import kotlin.time.Duration
 
 data class FareBreakdown(
     val tariffId: String,
-    /** Line items exclude VAT and are each rounded half-up; with [vat], [passThrough] and [rounding] they sum exactly to [total]. */
+    /**
+     * Line items exclude VAT and are each rounded half-up.
+     * With [vat], [passThrough] and [rounding], less [discount], they sum exactly to [total].
+     */
     val startingFare: Money,
     val timeCharge: Money,
     val distanceCharge: Money,
     val extras: Money,
+    /** Taken off before VAT, so it is shown without VAT like the other lines; positive, and subtracted. */
+    val discount: Money,
     val vat: Money,
     /** Amounts such as tolls, charged as entered with no VAT. */
     val passThrough: Money,
@@ -19,6 +24,11 @@ data class FareBreakdown(
     val total: Money,
     /** The running fare to show while the meter runs: rounded down to 0.10 ₪, so it never exceeds [total]. */
     val displayTotal: Money,
+    val agreedPrice: Money?,
+    /** The meter's price display (spec 2018 §8.2.3): fare without extras, VAT included, rounded down to 0.10 ₪. */
+    val displayFare: Money,
+    /** The meter's extras display (spec 2018 §8.2.4): extras with VAT plus tolls. */
+    val displayExtras: Money,
     val chargedTime: Duration,
     val distanceMetres: Long,
 )

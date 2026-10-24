@@ -22,6 +22,8 @@ final class MeterModel {
     @ObservationIgnored private let feed: LocationFeed?
     @ObservationIgnored private let liveActivity: LiveActivityController?
     @ObservationIgnored private let now: () -> Date
+    @ObservationIgnored private let profile: () -> IssuerProfile
+    @ObservationIgnored private let nextInvoiceNumber: () -> Int64
     @ObservationIgnored private var ticker: Task<Void, Never>?
 
     /// Pass nil [feed] and [liveActivity] to run without CoreLocation or ActivityKit (tests, previews).
@@ -29,8 +31,12 @@ final class MeterModel {
         store: TripStore = .standard,
         feed: LocationFeed? = LocationFeed(),
         liveActivity: LiveActivityController? = LiveActivityController(),
-        now: @escaping () -> Date = Date.init
+        now: @escaping () -> Date = Date.init,
+        profile: @escaping () -> IssuerProfile = { IssuerProfile.load() },
+        nextInvoiceNumber: @escaping () -> Int64 = { InvoiceSequence.next() }
     ) {
+        self.profile = profile
+        self.nextInvoiceNumber = nextInvoiceNumber
         self.store = store
         self.feed = feed
         self.liveActivity = liveActivity
@@ -43,16 +49,42 @@ final class MeterModel {
         apply { $0.hire(atMs: $1, vatExempt: vatExempt) }
     }
 
-    func pause() {
-        apply { $0.pause(atMs: $1) }
+    func start(vatExempt: Bool, agreedPrice: Int64) {
+        apply { $0.hireAtAgreedPrice(atMs: $1, vatExempt: vatExempt, agreedPriceMinorUnits: agreedPrice) }
+    }
+
+    func discount(percentBasisPoints: Int32) {
+        apply { $0.discountPercent(atMs: $1, basisPoints: percentBasisPoints) }
+    }
+
+    func discount(amountMinorUnits: Int64) {
+        apply { $0.discountAmount(atMs: $1, amountMinorUnits: amountMinorUnits) }
     }
 
     func resume() {
         apply { $0.resume(atMs: $1) }
     }
 
+    /// Hired to payment, issuing the invoice the first time (spec 2018 §8.1.7). Without complete taxi details there is
+    /// no invoice.
     func stop() {
-        apply { $0.stop(atMs: $1) }
+        apply { meter, now in
+            guard meter.stop(atMs: now) else { return false }
+            let profile = profile()
+            if profile.isComplete, let dealer = profile.dealer, meter.reading(nowMs: now).invoice == nil {
+                _ = meter.issueInvoice(
+                    atMs: now,
+                    number: nextInvoiceNumber(),
+                    taxiNumber: profile.taxiNumber,
+                    licenceNumber: profile.licenceNumber,
+                    dealerName: dealer.name,
+                    dealerNumber: dealer.number,
+                    driverName: profile.driverName,
+                    driverId: profile.driverId
+                )
+            }
+            return true
+        }
     }
 
     func addExtra(_ id: String) {
@@ -68,8 +100,9 @@ final class MeterModel {
     }
 
     /// Ends the trip and gets ready for the next one.
-    func settle() {
-        guard meter.settle(atMs: nowMs) else { return }
+    /// Payment to free, recording "cash" or "card" for the shift summary.
+    func settle(paymentMethod: String) {
+        guard meter.settlePaid(atMs: nowMs, paymentMethod: paymentMethod) else { return }
         try? store.saveCurrent(meter.entries)
         try? store.archiveCurrent(head: meter.reading(nowMs: nowMs).logHead)
         meter = Meter(tariffId: Self.tariffId)
@@ -127,16 +160,20 @@ final class MeterModel {
             accuracyMetres: location.horizontalAccuracy,
             speedMetresPerSecond: location.speed
         )
-        if moved {
-            persist()
+        guard moved else { return }
+        persist()
+        if FareReading.Phase(meter.phase) == reading.phase {
             refresh()
+        } else {
+            phaseChanged()
         }
     }
 
     /// Starts or stops location, the one-second ticker and the idle timer to match the trip's phase.
     private func phaseChanged() {
         refresh()
-        let tracking = reading.phase == .hired || reading.phase == .paused
+        // Payment keeps listening: driving on returns the meter to hired.
+        let tracking = [.hired, .paused, .stopped].contains(reading.phase)
         UIApplication.shared.isIdleTimerDisabled = tracking
         if tracking {
             feed?.start(

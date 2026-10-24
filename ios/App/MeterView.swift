@@ -8,6 +8,7 @@ struct MeterView: View {
     @State private var showingSettings = false
     @State private var confirmingStop = false
     @State private var pastTrips: [PastTrip]?
+    @State private var enteringAgreedPrice = false
 
     var body: some View {
         MeterScreen(
@@ -16,10 +17,10 @@ struct MeterView: View {
             locationProblem: model.locationProblem,
             actions: MeterActions(
                 start: { model.start(vatExempt: vatExempt) },
-                pause: model.pause,
+                startAtAgreedPrice: { enteringAgreedPrice = true },
                 resume: model.resume,
                 stop: { confirmingStop = true },
-                newTrip: model.settle,
+                settle: { model.settle(paymentMethod: $0) },
                 showExtras: { showingExtras = true },
                 showSettings: { showingSettings = true },
                 showHistory: { pastTrips = TripStore.standard.archivedTrips() }
@@ -37,6 +38,12 @@ struct MeterView: View {
         })) {
             HistoryView(trips: pastTrips ?? [])
         }
+        .sheet(isPresented: $enteringAgreedPrice) {
+            AgreedPriceSheet(currencyCode: model.reading.currencyCode) {
+                model.start(vatExempt: vatExempt, agreedPrice: $0)
+            }
+            .presentationDetents([.medium])
+        }
         .sheet(isPresented: $showingSettings) {
             SettingsView(tariffId: model.tariffId, tariffSources: model.tariffSources)
         }
@@ -46,7 +53,9 @@ struct MeterView: View {
                 currencyCode: model.reading.currencyCode,
                 onAdd: model.addExtra,
                 onAddAmount: { model.addExtra($0, amountMinorUnits: $1) },
-                onRemove: model.removeExtra
+                onRemove: model.removeExtra,
+                onDiscountPercent: { model.discount(percentBasisPoints: $0) },
+                onDiscountAmount: { model.discount(amountMinorUnits: $0) }
             )
             .presentationDetents([.medium, .large])
         }
