@@ -165,10 +165,13 @@ struct MeterScreen: View {
                 }
             case .hired:
                 if tripCount > 1 {
-                    Picker("trip.active", selection: Binding(get: { activeTrip }, set: actions.selectTrip)) {
-                        ForEach(0 ..< tripCount, id: \.self) { Text("trip.number \($0 + 1)").tag($0) }
+                    HStack(spacing: Spacing.small) {
+                        ForEach(0 ..< tripCount, id: \.self) { index in
+                            PillButton("trip.number \(index + 1)", style: index == activeTrip ? .accent : .quiet) {
+                                actions.selectTrip(index)
+                            }
+                        }
                     }
-                    .pickerStyle(.segmented)
                 }
                 HStack(spacing: Spacing.medium) {
                     PillButton("meter.extras", style: .quiet, action: actions.showExtras)
