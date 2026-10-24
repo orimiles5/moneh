@@ -2,7 +2,6 @@ import SwiftUI
 
 struct MeterActions {
     var start: () -> Void = {}
-    var pause: () -> Void = {}
     var resume: () -> Void = {}
     var stop: () -> Void = {}
     var newTrip: () -> Void = {}
@@ -92,16 +91,14 @@ struct MeterScreen: View {
     @ViewBuilder private var status: some View {
         switch reading.phase {
         case .idle, .settled:
-            Text("meter.idle.title")
+            Text("meter.state.free")
                 .font(Typography.headline)
                 .foregroundStyle(Palette.inkSecondary.color)
         case .hired, .paused, .stopped:
             VStack(spacing: Spacing.medium) {
-                if reading.phase == .paused {
-                    Text("meter.paused")
-                        .font(Typography.headline)
-                        .foregroundStyle(Palette.inkSecondary.color)
-                }
+                Text(reading.phase == .paused ? "meter.paused" : "meter.state.hired")
+                    .font(Typography.headline)
+                    .foregroundStyle(Palette.inkSecondary.color)
                 HStack(spacing: Spacing.xxLarge) {
                     Stat(label: "meter.time", value: elapsed)
                     Stat(label: "meter.distance", value: distance)
@@ -116,12 +113,9 @@ struct MeterScreen: View {
             case .idle, .settled:
                 PillButton("meter.start", style: .accent, action: actions.start)
             case .hired:
-                HStack(spacing: Spacing.medium) {
-                    PillButton("meter.extras", style: .quiet, action: actions.showExtras)
-                    PillButton("meter.pause", style: .quiet, action: actions.pause)
-                }
+                PillButton("meter.extras", style: .quiet, action: actions.showExtras)
                 PillButton("meter.stop", style: .danger, action: actions.stop)
-            case .paused:
+            case .paused: // Only a trip paused by an earlier version.
                 HStack(spacing: Spacing.medium) {
                     PillButton("meter.extras", style: .quiet, action: actions.showExtras)
                     PillButton("meter.resume", style: .accent, action: actions.resume)

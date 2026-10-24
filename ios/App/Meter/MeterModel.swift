@@ -43,10 +43,6 @@ final class MeterModel {
         apply { $0.hire(atMs: $1, vatExempt: vatExempt) }
     }
 
-    func pause() {
-        apply { $0.pause(atMs: $1) }
-    }
-
     func resume() {
         apply { $0.resume(atMs: $1) }
     }
@@ -127,16 +123,20 @@ final class MeterModel {
             accuracyMetres: location.horizontalAccuracy,
             speedMetresPerSecond: location.speed
         )
-        if moved {
-            persist()
+        guard moved else { return }
+        persist()
+        if FareReading.Phase(meter.phase) == reading.phase {
             refresh()
+        } else {
+            phaseChanged()
         }
     }
 
     /// Starts or stops location, the one-second ticker and the idle timer to match the trip's phase.
     private func phaseChanged() {
         refresh()
-        let tracking = reading.phase == .hired || reading.phase == .paused
+        // Payment keeps listening: driving on returns the meter to hired.
+        let tracking = [.hired, .paused, .stopped].contains(reading.phase)
         UIApplication.shared.isIdleTimerDisabled = tracking
         if tracking {
             feed?.start(

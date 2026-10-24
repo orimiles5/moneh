@@ -36,6 +36,7 @@ private fun TripState.Paused.apply(event: TripEvent): TripState? =
 private fun TripState.Stopped.apply(event: TripEvent): TripState? =
     when (event) {
         is TripEvent.Settled -> settle(event.at)
+        is TripEvent.Resumed -> resume(event.at)
         is TripEvent.ExtraAdded -> addExtra(event.at, event.extraId, event.amountMinorUnits)
         is TripEvent.ExtraRemoved -> removeExtra(event.at, event.extraId)
         else -> null

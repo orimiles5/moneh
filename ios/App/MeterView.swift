@@ -16,7 +16,6 @@ struct MeterView: View {
             locationProblem: model.locationProblem,
             actions: MeterActions(
                 start: { model.start(vatExempt: vatExempt) },
-                pause: model.pause,
                 resume: model.resume,
                 stop: { confirmingStop = true },
                 newTrip: model.settle,

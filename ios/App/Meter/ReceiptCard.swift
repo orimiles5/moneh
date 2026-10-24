@@ -117,6 +117,9 @@ struct ReceiptSlot: View {
 
     var body: some View {
         VStack(spacing: Spacing.large) {
+            Text("meter.state.payment")
+                .font(Typography.headline)
+                .foregroundStyle(Palette.inkSecondary.color)
             VStack(spacing: 0) {
                 Capsule()
                     .fill(Palette.ink.color)

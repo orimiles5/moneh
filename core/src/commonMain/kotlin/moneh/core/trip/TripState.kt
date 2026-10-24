@@ -66,7 +66,7 @@ sealed interface TripState {
         fun stop(at: Instant) = Stopped(events.append(TripEvent.Stopped(at)))
     }
 
-    /** The meter no longer runs, but extras such as a toll can still be added before payment. */
+    /** Payment (תשלום): the meter no longer runs, but extras such as a toll can still be added before payment. */
     data class Stopped internal constructor(
         override val events: List<TripEvent>,
     ) : TripState {
@@ -82,6 +82,9 @@ sealed interface TripState {
         ) = Stopped(events.appendRemoval(at, extraId))
 
         fun settle(at: Instant) = Settled(events.append(TripEvent.Settled(at)))
+
+        /** The passenger rides on: back to hired at the same tariff (spec 2018 §8.1.7). */
+        fun resume(at: Instant) = Hired(events.append(TripEvent.Resumed(at)))
     }
 
     data class Settled internal constructor(

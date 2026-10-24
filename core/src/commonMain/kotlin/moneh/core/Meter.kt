@@ -58,6 +58,9 @@ class Meter private constructor(
 
     private var tracker = DistanceTracker()
 
+    /** Distance driven since payment began; past [RESUME_AFTER_METRES] the trip goes back to hired. */
+    private var metresSinceStop = 0L
+
     val phase: MeterPhase
         get() =
             when (state) {
@@ -108,10 +111,10 @@ class Meter private constructor(
         vatExempt: Boolean,
     ): Boolean = transition { (it as? TripState.Idle)?.hire(at(atMs), tariff.id, vatExempt) }.also { if (it) tracker = DistanceTracker() }
 
-    fun pause(atMs: Long) = transition { (it as? TripState.Hired)?.pause(at(atMs)) }
-
+    /** Only for a trip paused by an earlier version; the meter states are free, hired and payment, with no pause. */
     fun resume(atMs: Long) = transition { (it as? TripState.Paused)?.resume(at(atMs)) }
 
+    /** Hired to payment (תפוס → תשלום). */
     fun stop(atMs: Long) =
         transition {
             when (it) {
@@ -119,7 +122,7 @@ class Meter private constructor(
                 is TripState.Paused -> it.stop(at(atMs))
                 else -> null
             }
-        }
+        }.also { if (it) metresSinceStop = 0 }
 
     fun settle(atMs: Long) = transition { (it as? TripState.Stopped)?.settle(at(atMs)) }
 
@@ -160,7 +163,16 @@ class Meter private constructor(
     ): Boolean {
         val sample = LocationSample(at(atMs), latitude, longitude, accuracyMetres, speedMetresPerSecond.takeIf { it >= 0 })
         val metres = tracker.add(sample)
-        return metres > 0 && transition { (it as? TripState.Hired)?.move(sample.at, metres) }
+        if (metres <= 0) return false
+        return when (val current = state) {
+            is TripState.Hired -> transition { current.move(sample.at, metres) }
+            // Spec 2018 §8.1.7: driving on more than 10 m after payment began returns to hired and charges that distance.
+            is TripState.Stopped -> {
+                metresSinceStop += metres
+                metresSinceStop > RESUME_AFTER_METRES && transition { current.resume(sample.at).move(sample.at, metresSinceStop) }
+            }
+            else -> false
+        }
     }
 
     fun rateIdAt(nowMs: Long): String = tariff.rateIdAt(Instant.fromEpochMilliseconds(nowMs))
@@ -260,3 +272,5 @@ class Meter private constructor(
             }.getOrNull()
     }
 }
+
+private const val RESUME_AFTER_METRES = 10L

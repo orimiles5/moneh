@@ -16,7 +16,7 @@ struct CarPlayContentTests {
         // Formatters may use non-breaking spaces; compare with plain ones.
         let details = content.items.map { $0.detail.replacing(/\s/, with: " ") }
         #expect(details == ["₪41.66", "Tariff B", "14:32", "6.8 km"])
-        #expect(content.actions == [.pause, .stop])
+        #expect(content.actions == [.stop])
     }
 
     @Test func offersOnlyLegalActions() {

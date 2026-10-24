@@ -8,7 +8,7 @@ struct CarPlayContent: Equatable {
     }
 
     enum Action: Equatable {
-        case pause, resume, stop
+        case resume, stop
     }
 
     let items: [Item]
@@ -49,9 +49,10 @@ struct CarPlayContent: Equatable {
                     ).locale(locale))
             ),
         ]
-        // Starting a trip and extras stay on the phone; while driving, only pause, resume and stop.
+        // Starting a trip and extras stay on the phone; while driving, only stop (and resume for a trip paused by an
+        // earlier version).
         actions = switch reading.phase {
-        case .hired: [.pause, .stop]
+        case .hired: [.stop]
         case .paused: [.resume, .stop]
         case .idle, .stopped, .settled: []
         }

@@ -69,7 +69,7 @@ private extension Date {
     }
 }
 
-private extension FareReading.Phase {
+extension FareReading.Phase {
     init(_ phase: MeterPhase) {
         switch phase {
         case .hired: self = .hired

@@ -494,22 +494,6 @@
         }
       }
     },
-    "meter.idle.title": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ready"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "מוכן"
-          }
-        }
-      }
-    },
     "meter.newTrip": {
       "localizations": {
         "en": {
@@ -522,23 +506,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "נסיעה חדשה"
-          }
-        }
-      }
-    },
-    "meter.pause": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pause"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "השהיה"
           }
         }
       }
@@ -589,6 +556,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "התחלת נסיעה"
+          }
+        }
+      }
+    },
+    "meter.state.free": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vacant"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "פנוי"
+          }
+        }
+      }
+    },
+    "meter.state.hired": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hired"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "תפוס"
+          }
+        }
+      }
+    },
+    "meter.state.payment": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Payment"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "תשלום"
           }
         }
       }

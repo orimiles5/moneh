@@ -23,12 +23,6 @@ final class MeterScreenSnapshotTests: XCTestCase {
         assertAllVariants(Self.running)
     }
 
-    func testPaused() {
-        var reading = Self.running
-        reading.phase = .paused
-        assertAllVariants(reading)
-    }
-
     func testReceipt() {
         var reading = Self.running
         reading.phase = .stopped

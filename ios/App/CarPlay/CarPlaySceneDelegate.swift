@@ -47,8 +47,6 @@
         private func button(for action: CarPlayContent.Action) -> CPTextButton {
             let model = MeterModel.shared
             return switch action {
-            case .pause:
-                CPTextButton(title: String(localized: "meter.pause"), textStyle: .normal) { _ in model.pause() }
             case .resume:
                 CPTextButton(title: String(localized: "meter.resume"), textStyle: .confirm) { _ in model.resume() }
             case .stop:
