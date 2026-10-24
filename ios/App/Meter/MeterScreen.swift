@@ -77,14 +77,37 @@ struct MeterScreen: View {
         }
     }
 
+    /// Spec 2018 §8.2.3–8.2.4: the price display shows the fare without extras; extras have their own labelled display.
     private var fare: some View {
-        Text(FareFormat.string(minorUnits: reading.displayTotal, currencyCode: reading.currencyCode, locale: locale))
+        VStack(spacing: Spacing.small) {
+            Text("meter.fare.label")
+                .font(Typography.label)
+                .foregroundStyle(Palette.inkSecondary.color)
+            fareAmount
+            if reading.displayExtras > 0 {
+                HStack(spacing: Spacing.small) {
+                    Text("meter.extras")
+                    Text(FareFormat.string(
+                        minorUnits: reading.displayExtras,
+                        currencyCode: reading.currencyCode,
+                        locale: locale
+                    ))
+                    .monospacedDigit()
+                }
+                .font(Typography.headline)
+                .foregroundStyle(Palette.ink.color)
+            }
+        }
+    }
+
+    private var fareAmount: some View {
+        Text(FareFormat.string(minorUnits: reading.displayFare, currencyCode: reading.currencyCode, locale: locale))
             .font(Typography.fare)
             .foregroundStyle(reading.phase == .idle ? Palette.inkSecondary.color : Palette.ink.color)
             .lineLimit(1)
             .minimumScaleFactor(0.3)
-            .contentTransition(reduceMotion ? .identity : .numericText(value: Double(reading.displayTotal)))
-            .animation(reduceMotion ? nil : Motion.standard, value: reading.displayTotal)
+            .contentTransition(reduceMotion ? .identity : .numericText(value: Double(reading.displayFare)))
+            .animation(reduceMotion ? nil : Motion.standard, value: reading.displayFare)
             .accessibilityAddTraits(.updatesFrequently)
     }
 
@@ -128,8 +151,9 @@ struct MeterScreen: View {
     }
 
     private var elapsed: String {
+        // Spec 2018 §8.2.5: MM:SS under an hour, HH:MM from an hour.
         let pattern: Duration.TimeFormatStyle.Pattern = reading
-            .elapsed >= .seconds(3600) ? .hourMinuteSecond : .minuteSecond
+            .elapsed >= .seconds(3600) ? .hourMinute(padHourToLength: 2) : .minuteSecond
         return reading.elapsed.formatted(.time(pattern: pattern).locale(locale))
     }
 

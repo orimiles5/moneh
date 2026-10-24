@@ -494,6 +494,23 @@
         }
       }
     },
+    "meter.fare.label": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fare"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מחיר הנסיעה"
+          }
+        }
+      }
+    },
     "meter.newTrip": {
       "localizations": {
         "en": {
@@ -871,13 +888,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tariff A"
+            "value": "Tariff 1"
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "תעריף א׳"
+            "value": "תעריף 1"
           }
         }
       }
@@ -888,13 +905,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tariff B"
+            "value": "Tariff 2"
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "תעריף ב׳"
+            "value": "תעריף 2"
           }
         }
       }
@@ -905,13 +922,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tariff C"
+            "value": "Tariff 3"
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "תעריף ג׳"
+            "value": "תעריף 3"
           }
         }
       }

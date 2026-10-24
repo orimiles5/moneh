@@ -151,6 +151,19 @@ class FareEngineTest {
     }
 
     @Test
+    fun fareAndExtrasAreDisplayedSeparately() {
+        // Fare 3531 x 1.18 = 4166.58 -> 41.60 shown; booking 490 x 1.18 = 578.2 -> 5.78, plus a 12.00 toll.
+        val trip =
+            hire("2026-10-18T10:00")
+                .addExtra(at("2026-10-18T10:00"), "booking")
+                .move(at("2026-10-18T10:10"), 5_000)
+                .stop(at("2026-10-18T10:10"))
+                .addExtra(at("2026-10-18T10:10"), "expressLane", amountMinorUnits = 1200)
+        assertEquals(4160, fare(trip).displayFare.minorUnits)
+        assertEquals(578 + 1200, fare(trip).displayExtras.minorUnits)
+    }
+
+    @Test
     fun finalSumGoesToTenAgorot() {
         // 4166.58 -> 4170 (6.58 agorot above 4160 is more than 5); 3193.08 -> 3190; 3531 (Eilat) -> 3530.
         val shortTrip = hire("2026-10-18T10:00").move(at("2026-10-18T10:10"), 5_000).stop(at("2026-10-18T10:10"))

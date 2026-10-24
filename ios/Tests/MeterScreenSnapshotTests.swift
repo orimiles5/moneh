@@ -9,7 +9,9 @@ final class MeterScreenSnapshotTests: XCTestCase {
         var reading = FareReading.idle
         reading.phase = .hired
         reading.rateId = "B"
-        reading.displayTotal = 4166
+        reading.displayTotal = 4740
+        reading.displayFare = 4160
+        reading.displayExtras = 578
         reading.elapsed = .seconds(14 * 60 + 32)
         reading.distanceMetres = 6830
         return reading

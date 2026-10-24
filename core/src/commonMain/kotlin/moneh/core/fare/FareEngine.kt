@@ -32,7 +32,8 @@ fun computeFare(
     val passThrough = meter.passThrough
     val subtotal = starting + time + distance + extras
     val vatBasisPoints = if (hired.vatExempt) 0 else tariff.vatBasisPoints
-    val numerator = subtotal * (BASIS_POINTS_PER_WHOLE + vatBasisPoints) + passThrough * UNITS * BASIS_POINTS_PER_WHOLE
+    val withVat = BASIS_POINTS_PER_WHOLE + vatBasisPoints
+    val numerator = subtotal * withVat + passThrough * UNITS * BASIS_POINTS_PER_WHOLE
     val denominator = UNITS * BASIS_POINTS_PER_WHOLE
     val exact = roundHalfUp(numerator, denominator)
     val total = roundToTenAgorot(numerator, denominator)
@@ -53,6 +54,8 @@ fun computeFare(
         rounding = Money(total - exact),
         total = Money(total),
         displayTotal = Money(numerator / (denominator * TEN_AGOROT) * TEN_AGOROT),
+        displayFare = Money((starting + time + distance) * withVat / (denominator * TEN_AGOROT) * TEN_AGOROT),
+        displayExtras = Money(roundHalfUp(extras * withVat, denominator) + passThrough),
         chargedTime = meter.chargedMs.milliseconds,
         distanceMetres = meter.metres,
     )

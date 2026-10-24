@@ -19,6 +19,10 @@ data class FareBreakdown(
     val total: Money,
     /** The running fare to show while the meter runs: rounded down to 0.10 ₪, so it never exceeds [total]. */
     val displayTotal: Money,
+    /** The meter's price display (spec 2018 §8.2.3): fare without extras, VAT included, rounded down to 0.10 ₪. */
+    val displayFare: Money,
+    /** The meter's extras display (spec 2018 §8.2.4): extras with VAT plus tolls. */
+    val displayExtras: Money,
     val chargedTime: Duration,
     val distanceMetres: Long,
 )
