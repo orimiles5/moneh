@@ -1,52 +1,69 @@
 {
-  "sourceLanguage" : "he",
-  "strings" : {
-    "CFBundleDisplayName" : {
-      "comment" : "Bundle display name",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Moneh"
+  "sourceLanguage": "he",
+  "strings": {
+    "CFBundleDisplayName": {
+      "comment": "Bundle display name",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moneh"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מונה"
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מונה"
           }
         }
       }
     },
-    "CFBundleName" : {
-      "comment" : "Bundle name",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "he" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Moneh"
+    "CFBundleName": {
+      "comment": "Bundle name",
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "he": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Moneh"
           }
         }
       }
     },
-    "NSLocationWhenInUseUsageDescription" : {
-      "comment" : "Privacy - Location When In Use Usage Description",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Moneh uses your location to measure the trip distance while the meter is running. Your location stays on this device."
+    "NSFaceIDUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moneh identifies the driver when a shift opens."
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מונה משתמש במיקום כדי למדוד את מרחק הנסיעה בזמן שהמונה פועל. המיקום נשאר במכשיר."
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מונה מזהה את הנהג בפתיחת משמרת."
+          }
+        }
+      }
+    },
+    "NSLocationWhenInUseUsageDescription": {
+      "comment": "Privacy - Location When In Use Usage Description",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moneh uses your location to measure the trip distance while the meter is running. Your location stays on this device."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מונה משתמש במיקום כדי למדוד את מרחק הנסיעה בזמן שהמונה פועל. המיקום נשאר במכשיר."
           }
         }
       }
     }
   },
-  "version" : "1.0"
+  "version": "1.0"
 }

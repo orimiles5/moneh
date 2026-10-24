@@ -31,6 +31,7 @@ targets:
         NSSupportsLiveActivities: true
         # Localized in App/InfoPlist.xcstrings.
         NSLocationWhenInUseUsageDescription: מונה משתמש במיקום כדי למדוד את מרחק הנסיעה בזמן שהמונה פועל. המיקום נשאר במכשיר.
+        NSFaceIDUsageDescription: מונה מזהה את הנהג בפתיחת משמרת.
     dependencies:
       # Built by ./gradlew :core:assembleMonehCoreReleaseXCFramework
       - framework: ../core/build/XCFrameworks/release/MonehCore.xcframework

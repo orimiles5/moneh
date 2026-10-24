@@ -96,4 +96,30 @@ struct MeterModelTests {
     func validatesIsraeliIds(id: String, valid: Bool) {
         #expect(IsraeliID.isValid(id) == valid)
     }
+
+    @Test func shiftsNeedCompleteDetailsAndCloseOnlyWhenFree() {
+        #expect(!model(at: clock).openShift(), "no taxi details yet")
+
+        var profile = IssuerProfile(
+            taxiNumber: "1234",
+            licenceNumber: "12-345-67",
+            driverName: "Driver",
+            driverId: "000000018"
+        )
+        profile.dealers = [IssuerProfile.Dealer(name: "Dealer", number: "512345678")]
+        let model = model(at: clock, profile: profile)
+        #expect(model.openShift())
+        #expect(model.shift?.driverId == "000000018")
+        #expect(store.loadShift() == model.shift, "the open shift survives a restart")
+
+        model.start(vatExempt: false)
+        model.closeShift()
+        #expect(model.shift != nil, "a shift does not close mid-trip")
+        model.stop()
+        model.settle(paymentMethod: "cash")
+        model.closeShift()
+        #expect(model.shift == nil)
+        #expect(store.loadShift() == nil)
+        #expect(store.allShifts().first?.closedAt != nil)
+    }
 }

@@ -63,7 +63,12 @@ struct TripStore {
             .map { file in
                 let meter = load(file).flatMap { Meter.companion.restore(entries: $0) }
                 // Reading at time zero clamps to the trip's last event, so it is the final fare.
-                return PastTrip(id: file.lastPathComponent, reading: meter.map { FareReading($0.reading(nowMs: 0)) })
+                let reading = meter?.reading(nowMs: 0)
+                return PastTrip(
+                    id: file.lastPathComponent,
+                    reading: reading.map(FareReading.init),
+                    coreReading: reading
+                )
             }
             .sorted { ($0.reading?.startedAt ?? .distantPast) > ($1.reading?.startedAt ?? .distantPast) }
     }
@@ -76,4 +81,64 @@ struct TripStore {
 struct PastTrip: Identifiable, Equatable {
     let id: String
     let reading: FareReading?
+    /// The core's reading, for totals computed in the core.
+    var coreReading: MeterReading?
+}
+
+/// A driver's shift (spec 2018 §8.3.1): who drove, for which dealer, and every metre driven.
+struct Shift: Codable, Equatable, Identifiable {
+    var id = UUID()
+    let openedAt: Date
+    var closedAt: Date?
+    let taxiNumber: String
+    let licenceNumber: String
+    let dealerName: String
+    let dealerNumber: String
+    let driverName: String
+    let driverId: String
+    var drivenMetres: Int64 = 0
+
+    func includes(_ trip: FareReading) -> Bool {
+        guard let start = trip.startedAt else { return false }
+        return start >= openedAt && start <= (closedAt ?? .distantFuture)
+    }
+}
+
+extension TripStore {
+    private var shifts: URL {
+        directory.appending(path: "Shifts", directoryHint: .isDirectory)
+    }
+
+    private var currentShiftFile: URL {
+        shifts.appending(path: "current.json")
+    }
+
+    func saveShift(_ shift: Shift) throws {
+        try FileManager.default.createDirectory(at: shifts, withIntermediateDirectories: true)
+        try JSONEncoder().encode(shift).write(
+            to: currentShiftFile,
+            options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication]
+        )
+    }
+
+    func loadShift() -> Shift? {
+        (try? Data(contentsOf: currentShiftFile)).flatMap { try? JSONDecoder().decode(Shift.self, from: $0) }
+    }
+
+    /// Closed shifts are kept, never pruned: the spec asks for at least six months (§8.3.5).
+    func closeShift(_ shift: Shift) throws {
+        try JSONEncoder().encode(shift).write(
+            to: shifts.appending(path: "\(shift.id.uuidString).json"),
+            options: .atomic
+        )
+        try FileManager.default.removeItem(at: currentShiftFile)
+    }
+
+    /// Every shift, newest first, the open one included.
+    func allShifts() -> [Shift] {
+        let files = (try? FileManager.default.contentsOfDirectory(at: shifts, includingPropertiesForKeys: nil)) ?? []
+        return files
+            .compactMap { (try? Data(contentsOf: $0)).flatMap { try? JSONDecoder().decode(Shift.self, from: $0) } }
+            .sorted { $0.openedAt > $1.openedAt }
+    }
 }

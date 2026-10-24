@@ -16,6 +16,8 @@ final class MeterModel {
 
     private(set) var reading = FareReading.idle
     private(set) var locationProblem: LocationFeed.Problem?
+    /// The open shift; trips start only within one.
+    private(set) var shift: Shift?
 
     @ObservationIgnored private var meter: Meter
     @ObservationIgnored private let store: TripStore
@@ -25,6 +27,7 @@ final class MeterModel {
     @ObservationIgnored private let profile: () -> IssuerProfile
     @ObservationIgnored private let nextInvoiceNumber: () -> Int64
     @ObservationIgnored private var ticker: Task<Void, Never>?
+    @ObservationIgnored private let odometer = Odometer()
 
     /// Pass nil [feed] and [liveActivity] to run without CoreLocation or ActivityKit (tests, previews).
     init(
@@ -42,6 +45,7 @@ final class MeterModel {
         self.liveActivity = liveActivity
         self.now = now
         meter = store.loadCurrent().flatMap { Meter.companion.restore(entries: $0) } ?? Meter(tariffId: Self.tariffId)
+        shift = store.loadShift()
         phaseChanged()
     }
 
@@ -100,6 +104,36 @@ final class MeterModel {
     }
 
     /// Ends the trip and gets ready for the next one.
+    /// Opens a shift for the identified driver (identification happens in the view). False without complete taxi
+    /// details.
+    @discardableResult
+    func openShift() -> Bool {
+        let profile = profile()
+        guard shift == nil, profile.isComplete, let dealer = profile.dealer else { return false }
+        let opened = Shift(
+            openedAt: now(),
+            taxiNumber: profile.taxiNumber,
+            licenceNumber: profile.licenceNumber,
+            dealerName: dealer.name,
+            dealerNumber: dealer.number,
+            driverName: profile.driverName,
+            driverId: profile.driverId
+        )
+        try? store.saveShift(opened)
+        shift = opened
+        phaseChanged()
+        return true
+    }
+
+    /// Closes the shift; only while free (spec 2018 §8.3.4).
+    func closeShift() {
+        guard var closing = shift, reading.phase == .idle || reading.phase == .settled else { return }
+        closing.closedAt = now()
+        try? store.closeShift(closing)
+        shift = nil
+        phaseChanged()
+    }
+
     /// Payment to free, recording "cash" or "card" for the shift summary.
     func settle(paymentMethod: String) {
         guard meter.settlePaid(atMs: nowMs, paymentMethod: paymentMethod) else { return }
@@ -153,8 +187,23 @@ final class MeterModel {
     }
 
     private func receive(_ location: CLLocation) {
+        let atMs = Int64(location.timestamp.timeIntervalSince1970 * 1000)
+        if var open = shift {
+            let metres = odometer.add(
+                atMs: atMs,
+                latitude: location.coordinate.latitude,
+                longitude: location.coordinate.longitude,
+                accuracyMetres: location.horizontalAccuracy,
+                speedMetresPerSecond: location.speed
+            )
+            if metres > 0 {
+                open.drivenMetres += metres
+                shift = open
+                try? store.saveShift(open)
+            }
+        }
         let moved = meter.location(
-            atMs: Int64(location.timestamp.timeIntervalSince1970 * 1000),
+            atMs: atMs,
             latitude: location.coordinate.latitude,
             longitude: location.coordinate.longitude,
             accuracyMetres: location.horizontalAccuracy,
@@ -172,8 +221,8 @@ final class MeterModel {
     /// Starts or stops location, the one-second ticker and the idle timer to match the trip's phase.
     private func phaseChanged() {
         refresh()
-        // Payment keeps listening: driving on returns the meter to hired.
-        let tracking = [.hired, .paused, .stopped].contains(reading.phase)
+        // Payment keeps listening: driving on returns the meter to hired. An open shift counts every metre driven.
+        let tracking = shift != nil || [.hired, .paused, .stopped].contains(reading.phase)
         UIApplication.shared.isIdleTimerDisabled = tracking
         if tracking {
             feed?.start(
