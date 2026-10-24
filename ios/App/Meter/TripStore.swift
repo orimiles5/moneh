@@ -2,7 +2,8 @@ import Foundation
 import MonehCore
 
 /// Persists each running trip's log after every event, so trips survive the app being killed.
-/// A trip's file is named by the hash of its first log entry; settled trips move to an archive folder, one file each.
+/// Each running trip's file is named by an id the model gives it; settled trips move to an archive folder, one file
+/// each.
 struct TripStore {
     struct StoredEntry: Codable, Equatable {
         let sequence: Int32
@@ -21,17 +22,14 @@ struct TripStore {
         directory.appending(path: "current-\(tripId).json")
     }
 
-    /// A running trip's id: the hash of its first entry. Nil before the trip starts, when there is nothing to keep.
-    static func tripId(_ entries: [TripLog.Entry]) -> String? {
-        entries.first?.hash
-    }
-
     private var archive: URL {
         directory.appending(path: "archive", directoryHint: .isDirectory)
     }
 
-    func saveCurrent(_ entries: [TripLog.Entry]) throws {
-        guard let tripId = Self.tripId(entries) else { return }
+    /// Nothing is saved before the trip starts. Two trips can start in the same millisecond with identical first
+    /// entries, so [tripId] is the model's own id, not anything derived from the log.
+    func saveCurrent(_ entries: [TripLog.Entry], tripId: String) throws {
+        guard !entries.isEmpty else { return }
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         let stored = entries.map {
             StoredEntry(sequence: $0.sequence, encoded: $0.encoded, previousHash: $0.previousHash, hash: $0.hash)
@@ -42,21 +40,24 @@ struct TripStore {
         )
     }
 
-    /// Every running trip, oldest first.
-    func loadCurrents() -> [[TripLog.Entry]] {
+    /// Every running trip with its id, oldest first.
+    func loadCurrents() -> [(id: String, entries: [TripLog.Entry])] {
         migrateSingleCurrent()
         let files = (try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)) ?? []
         return files
             .filter { $0.lastPathComponent.hasPrefix("current-") }
-            .compactMap(load)
-            .sorted { ($0.first?.encoded ?? "") < ($1.first?.encoded ?? "") }
+            .compactMap { file in
+                let id = String(file.deletingPathExtension().lastPathComponent.dropFirst("current-".count))
+                return load(file).map { (id, $0) }
+            }
+            .sorted { ($0.entries.first?.encoded ?? "", $0.id) < ($1.entries.first?.encoded ?? "", $1.id) }
     }
 
     /// Earlier versions kept one running trip in current.json.
     private func migrateSingleCurrent() {
         let legacy = directory.appending(path: "current.json")
-        guard let tripId = load(legacy).flatMap(Self.tripId) else { return }
-        try? FileManager.default.moveItem(at: legacy, to: currentFile(tripId))
+        guard FileManager.default.fileExists(atPath: legacy.path()) else { return }
+        try? FileManager.default.moveItem(at: legacy, to: currentFile(UUID().uuidString))
     }
 
     private func load(_ file: URL) -> [TripLog.Entry]? {
@@ -69,8 +70,7 @@ struct TripStore {
     }
 
     /// Moves a running trip into the archive, named by its final log hash.
-    func archiveCurrent(_ entries: [TripLog.Entry], head: String) throws {
-        guard let tripId = Self.tripId(entries) else { return }
+    func archiveCurrent(tripId: String, head: String) throws {
         try FileManager.default.createDirectory(at: archive, withIntermediateDirectories: true)
         try FileManager.default.moveItem(at: currentFile(tripId), to: archive.appending(path: "\(head).json"))
     }
