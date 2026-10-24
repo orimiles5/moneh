@@ -40,6 +40,24 @@ Compliance can be tested by any lab accredited under the law (cover letter §13)
 
 **What does carry over:** the fare engine and tariffs (pure, tested, sourced), the tamper-evident trip log, local persistence, Hebrew UI, and the trip states (mapped onto פנוי/תפוס/תשלום).
 
+**Status (2026-10-24): functional requirements implemented**
+
+| Spec | Implemented |
+|---|---|
+| §8.1.5–8.1.8, §8.2.1 | States פנוי / תפוס / תשלום shown as words; no pause; driving on more than 10 m in payment returns to hired |
+| §8.2.2–8.2.5 | Tariff 1/2/3; price display without extras; separate extras display; km to one decimal; MM:SS / HH:MM |
+| §8.2.3 | Final sum rounded to 0.10 ₪ |
+| §8.2.4, Annex A note 2 | Up to 18 extras, ≤ 99.99 ₪ each, names ≤ 16 characters; tolls entered by hand in hired or payment |
+| §9.9, §9.10 | Agreed price; discount by percent or amount |
+| Annex A | Invoice details fixed in the trip log on entering payment: document number, dealer, taxi, licence, driver and ID, times, distance to the metre, tariff, fare, extras, discount, total; shared digitally |
+| §8.3.1–8.3.5 | Shifts with summary (cash, card, income, extras, km driven, km hired, trips), cumulative totals, meter number; kept indefinitely; reports only while free |
+| §9.7, §9.12 | Driver identified by Face ID or passcode at shift opening; several licensed dealers, one chosen |
+| Annex B, §7.3, Annex C | Tariff data report; electronic seal logging every tariff and licence change, last five shown, never erased |
+| §9.11 | Trip source recorded; all trip data exportable as CSV |
+| §8.3.3 | Shared trips, each computed and invoiced separately and marked shared |
+
+Open: distance accuracy ±0.2% (§14) needs OBD-II speed and road tests (`docs/accuracy-protocol.md`); remote updates and reporting to a server (§7.1, §9.1, §9.2, §9.4, §9.6); card payments (§9.3); roof sign (§9.8). The receipt keeps saying it is not a tax invoice until the Tax Authority approves the app as a computerised invoicing system.
+
 **Decision (2026-10-24): the app replaces the device.** Taxis run Moneh only, with no meter hardware. The app implements every functional requirement of the spec (milestone "R Regulatory parity", issues #52–#63). Hardware-only requirements are replaced by software equivalents, to be agreed with the Ministry:
 
 | Hardware requirement | Proposed replacement |
