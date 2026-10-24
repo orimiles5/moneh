@@ -34,7 +34,8 @@ fun computeFare(
     val vatBasisPoints = if (hired.vatExempt) 0 else tariff.vatBasisPoints
     val numerator = subtotal * (BASIS_POINTS_PER_WHOLE + vatBasisPoints) + passThrough * UNITS * BASIS_POINTS_PER_WHOLE
     val denominator = UNITS * BASIS_POINTS_PER_WHOLE
-    val total = roundHalfUp(numerator, denominator)
+    val exact = roundHalfUp(numerator, denominator)
+    val total = roundToTenAgorot(numerator, denominator)
     val startingLine = roundHalfUp(starting, UNITS)
     val timeLine = roundHalfUp(time, UNITS)
     val distanceLine = roundHalfUp(distance, UNITS)
@@ -47,10 +48,11 @@ fun computeFare(
         distanceCharge = Money(distanceLine),
         extras = Money(extrasLine),
         // Absorbs the line items' rounding (at most a few agorot) so a printed breakdown always adds up to the total.
-        vat = Money(total - passThrough - startingLine - timeLine - distanceLine - extrasLine),
+        vat = Money(exact - passThrough - startingLine - timeLine - distanceLine - extrasLine),
         passThrough = Money(passThrough),
+        rounding = Money(total - exact),
         total = Money(total),
-        displayTotal = Money(numerator / denominator),
+        displayTotal = Money(numerator / (denominator * TEN_AGOROT) * TEN_AGOROT),
         chargedTime = meter.chargedMs.milliseconds,
         distanceMetres = meter.metres,
     )
@@ -168,6 +170,18 @@ private fun distanceCharge(
     }
     return charge
 }
+
+/** Spec 2018 §8.2.3: the final sum goes to 0.10 ₪, up to 5 agorot down and above 5 up (24.67 → 24.70, 24.23 → 24.20). */
+private fun roundToTenAgorot(
+    numerator: Long,
+    denominator: Long,
+): Long {
+    val step = denominator * TEN_AGOROT
+    val tens = numerator / step
+    return (if (numerator % step > denominator * TEN_AGOROT / 2) tens + 1 else tens) * TEN_AGOROT
+}
+
+private const val TEN_AGOROT = 10L
 
 private fun roundHalfUp(
     numerator: Long,

@@ -949,6 +949,23 @@
         }
       }
     },
+    "receipt.rounding": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rounding"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "עיגול"
+          }
+        }
+      }
+    },
     "receipt.share": {
       "extractionState": "manual",
       "localizations": {

@@ -4,6 +4,7 @@ Sources:
 - **[Order 2018]** צו פיקוח על מחירי מצרכים ושירותים (מחירי נסיעה במוניות), התשע"ח–2018, קובץ התקנות 8034, 5.7.2018. <https://www.gov.il/BlobFolder/dynamiccollectorresultitem/supervisionorder_05072018/he/decision_and_directives_SupervisionOrder_05072018.pdf>
 - **[Amendment 2026]** the same order (תיקון), התשפ"ו–2026, קובץ התקנות 12345, 30.3.2026. <https://www.gov.il/BlobFolder/policy/taxi-rate-2026/he/taxi-rate-26.pdf>
 - **[Committee 2025]** ועדת מחירים, סיכום דיוני בדיקת בסיס של תעריפי נסיעה במוניות מיוחדות, 18.8.2025. <https://www.gov.il/BlobFolder/dynamiccollectorresultitem/decision_18082025/he/decision_and_directives_decision_18082025.pdf>
+- **[Spec 2018]** משרד התחבורה, מפרט בדיקות למונה אלקטרוני למוניות הנשלט מרחוק ("מונה חכם"), דצמבר 2018. <https://www.gov.il/BlobFolder/dynamiccollectorresultitem/4public_transport/he/56.pdf>
 
 ## Prices in force 1.4.2026 – 31.3.2027 (VAT-exclusive, ₪)
 
@@ -39,6 +40,7 @@ The luggage extra expired on 31.12.2020.
 
 **Prices exclude VAT, and the passenger pays VAT on top.** The committee decided the order would state prices "ללא מע"מ" so that Eilat needs no separate tariff and VAT changes need no amendment ([Committee 2025], decision item 4). The new §3 updates prices automatically when the VAT rate changes. Table 6 confirms the passenger price is the ex-VAT price × 1.18. Eilat (אזור אילת) is VAT-exempt.
 - **Our choice:** VAT is applied once to the trip total and rounded half-up to the agora. VAT is charged on a transaction, not per line. Per-line rounding would drift by up to an agora per component.
+- **Final rounding:** the total, extras and tolls included, is then rounded to 0.10 ₪: up to 5 agorot down, above 5 up, as the Ministry's smart meter spec requires ([Spec 2018] §8.2.3). The receipt shows the difference as a rounding line.
 
 **Tariff bands switch mid-trip.** Tariffs are defined as "התעריף ... בעד נסיעה בימים ובשעות" — the price for travel during those days and hours ([Order 2018] §1). Each minute and each km is charged at the band in which it happens. The starting fare and booking extra are the same in every band, so the start time doesn't matter for them.
 
@@ -55,7 +57,7 @@ The luggage extra expired on 31.12.2020.
 - **Eve of a rest day (ערב יום מנוחה):** Friday, and any day before a rest day, until 05:59.
 - **Our choice when categories overlap:** rest day > eve of a rest day > Thursday > Sunday–Wednesday. For example, the second day of Rosh Hashana is both a rest day and the eve of one, so it is a rest day.
 
-**Meter resolution (our choice).** The order defines prices per minute and per km, not per step. The engine charges continuously: whole seconds × rate/60 and whole metres × rate/1000, accumulated exactly and rounded once at the end. The running display rounds down, so the shown fare never runs ahead of the final one.
+**Meter resolution (our choice).** The order defines prices per minute and per km, not per step. The engine charges continuously: whole seconds × rate/60 and whole metres × rate/1000, accumulated exactly and rounded once at the end. The running display rounds down to 0.10 ₪, so the shown fare never runs ahead of the final one.
 
 **Extras in v1 (product choice).** The driver toggles extras by hand: booking, airports, Highway 6, tunnels, and the express-lane toll with an amount entered. No geofencing.
 
