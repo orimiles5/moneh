@@ -38,7 +38,8 @@ final class MeterScreenSnapshotTests: XCTestCase {
         reading.extras = 490
         reading.vat = 1042
         reading.passThrough = 1200
-        reading.total = 8017
+        reading.rounding = 3
+        reading.total = 8020
         reading.startedAt = Date(timeIntervalSince1970: 1_792_317_600)
         reading.logHead = "f9fbfa80ff0bb52867f60476cb2b24107e37acd0054d95951f23ee16e4f09e5b"
         assertAllVariants(reading) { reading in

@@ -20,8 +20,8 @@ struct MeterModelTests {
         let later = model(at: clock.addingTimeInterval(600))
         #expect(later.reading.phase == .hired, "an unfinished trip is restored on launch")
         later.stop()
-        // 10 minutes at tariff A: (1056 + 10 x 165) x 1.18 = 3193.08
-        #expect(later.reading.total == 3193)
+        // 10 minutes at tariff A: (1056 + 10 x 165) x 1.18 = 3193.08, rounded to 0.10 ₪
+        #expect(later.reading.total == 3190)
         later.settle()
         #expect(later.reading.phase == .idle)
         #expect(store.archivedTripCount() == 1)
@@ -33,7 +33,7 @@ struct MeterModelTests {
         model.start(vatExempt: true)
         model.stop()
         #expect(model.reading.vatExempt)
-        #expect(model.reading.total == 1056)
+        #expect(model.reading.total == 1060)
     }
 
     @Test func illegalActionsAreIgnored() {
@@ -52,7 +52,7 @@ struct MeterModelTests {
         let trips = store.archivedTrips()
         #expect(trips.count == 1)
         #expect(trips.first?.reading?.phase == .settled)
-        #expect(trips.first?.reading?.total == 1246) // starting fare 10.56 x 1.18
+        #expect(trips.first?.reading?.total == 1250) // starting fare 10.56 x 1.18 = 12.46, rounded to 0.10 ₪
 
         let file = try store.directory.appending(path: "archive").appending(path: #require(trips.first?.id))
         let text = try String(contentsOf: file, encoding: .utf8).replacingOccurrences(of: "Hired", with: "Hirex")

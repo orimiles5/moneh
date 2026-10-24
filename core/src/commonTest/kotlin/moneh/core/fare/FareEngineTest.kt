@@ -14,6 +14,7 @@ import kotlin.time.Instant
 /**
  * Expected totals are hand-computed from il-2026-04 (VAT-exclusive agorot, then x1.18 rounded half-up), e.g.
  * 1056 + 10 min x 165 + 5 km x 165 = 3531; 3531 x 1.18 = 4166.58 -> 4167.
+ * [total] checks that agora-exact sum; the final rounding to 0.10 ₪ has its own tests.
  */
 class FareEngineTest {
     private val tariff = Tariffs.bundled.getValue("il-2026-04")
@@ -26,7 +27,9 @@ class FareEngineTest {
         vatExempt: Boolean = false,
     ) = TripState.Idle.hire(at(local), tariff.id, vatExempt)
 
-    private fun total(trip: TripState) = computeFare(tariff, trip.events, trip.events.last().at).total.minorUnits
+    private fun fare(trip: TripState) = computeFare(tariff, trip.events, trip.events.last().at)
+
+    private fun total(trip: TripState) = fare(trip).let { it.total.minorUnits - it.rounding.minorUnits }
 
     @Test
     fun shortDaytimeTrip() {
@@ -143,7 +146,25 @@ class FareEngineTest {
                 .stop(at("2026-10-18T21:10"))
                 .addExtra(at("2026-10-18T21:10"), "expressLane", amountMinorUnits = 777)
         val fare = computeFare(tariff, trip.events, at("2026-10-18T21:10"))
-        val parts = fare.startingFare + fare.timeCharge + fare.distanceCharge + fare.extras + fare.vat + fare.passThrough
+        val parts = fare.startingFare + fare.timeCharge + fare.distanceCharge + fare.extras + fare.vat + fare.passThrough + fare.rounding
         assertEquals(fare.total, parts)
+    }
+
+    @Test
+    fun finalSumGoesToTenAgorot() {
+        // 4166.58 -> 4170 (6.58 agorot above 4160 is more than 5); 3193.08 -> 3190; 3531 (Eilat) -> 3530.
+        val shortTrip = hire("2026-10-18T10:00").move(at("2026-10-18T10:10"), 5_000).stop(at("2026-10-18T10:10"))
+        assertEquals(4170, fare(shortTrip).total.minorUnits)
+        assertEquals(3, fare(shortTrip).rounding.minorUnits)
+        assertEquals(3190, fare(hire("2026-10-18T10:00").stop(at("2026-10-18T10:10"))).total.minorUnits)
+        val eilat = hire("2026-10-18T10:00", vatExempt = true).move(at("2026-10-18T10:10"), 5_000).stop(at("2026-10-18T10:10"))
+        assertEquals(3530, fare(eilat).total.minorUnits)
+        // Exactly 5 agorot goes down: 1056 + 1 km at 165 = 1221 VAT-free, plus a 4.94 toll = 1715.
+        val five =
+            hire("2026-10-18T10:00", vatExempt = true)
+                .move(at("2026-10-18T10:00"), 1_000)
+                .stop(at("2026-10-18T10:00"))
+                .addExtra(at("2026-10-18T10:00"), "expressLane", amountMinorUnits = 494)
+        assertEquals(1710, fare(five).total.minorUnits)
     }
 }

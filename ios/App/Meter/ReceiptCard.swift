@@ -32,6 +32,9 @@ struct ReceiptCard: View {
                 if reading.passThrough > 0 {
                     line("receipt.tolls", reading.passThrough)
                 }
+                if reading.rounding != 0 {
+                    line("receipt.rounding", reading.rounding)
+                }
             }
             .font(Typography.body)
 
