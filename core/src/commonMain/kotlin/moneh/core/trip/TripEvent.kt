@@ -6,11 +6,15 @@ import kotlin.time.Instant
 sealed interface TripEvent {
     val at: Instant
 
-    /** [vatExempt] marks a trip in a zone without VAT, such as Eilat; recorded so the fare is reproducible. */
+    /**
+     * [vatExempt] marks a trip in a zone without VAT, such as Eilat; recorded so the fare is reproducible.
+     * [agreedPriceMinorUnits] is a price agreed before the trip (spec 2018 §9.9): the passenger pays the lower of it and the fare.
+     */
     data class Hired(
         override val at: Instant,
         val tariffVersion: String,
         val vatExempt: Boolean = false,
+        val agreedPriceMinorUnits: Long? = null,
     ) : TripEvent
 
     /** Distance travelled since the previous [Moved], in metres, as measured by the distance pipeline. */
@@ -40,11 +44,32 @@ sealed interface TripEvent {
         val extraId: String,
     ) : TripEvent
 
+    /** A discount off the fare (spec 2018 §9.10), as [basisPoints] (1000 = 10%) or [amountMinorUnits]. The latest one counts. */
+    data class DiscountSet(
+        override val at: Instant,
+        val basisPoints: Int? = null,
+        val amountMinorUnits: Long? = null,
+    ) : TripEvent
+
     data class Stopped(
         override val at: Instant,
     ) : TripEvent
 
+    /** [paymentMethod] is "cash" or "card", for the shift summary (spec 2018 §8.3.1); null if not recorded. */
     data class Settled(
         override val at: Instant,
+        val paymentMethod: String? = null,
+    ) : TripEvent
+
+    /** What the tax invoice needs beyond the fare (spec 2018 Annex A), fixed in the log when it is issued on entering payment. */
+    data class InvoiceIssued(
+        override val at: Instant,
+        val number: Long,
+        val taxiNumber: String,
+        val licenceNumber: String,
+        val dealerName: String,
+        val dealerNumber: String,
+        val driverName: String,
+        val driverId: String,
     ) : TripEvent
 }

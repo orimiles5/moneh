@@ -1,6 +1,40 @@
 {
   "sourceLanguage": "he",
   "strings": {
+    "agreedPrice.amount": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Price agreed with the passenger"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "המחיר שסוכם עם הנוסע"
+          }
+        }
+      }
+    },
+    "agreedPrice.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The meter still runs. If the fare ends up lower, the passenger pays the fare; if higher, the agreed price."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "המונה פועל כרגיל. אם המחיר המחושב נמוך יותר, הנוסע משלם אותו; אם גבוה יותר, את המחיר המוסכם."
+          }
+        }
+      }
+    },
     "carplay.fare": {
       "extractionState": "manual",
       "localizations": {
@@ -35,6 +69,23 @@
         }
       }
     },
+    "common.cancel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ביטול"
+          }
+        }
+      }
+    },
     "common.done": {
       "extractionState": "manual",
       "localizations": {
@@ -52,19 +103,121 @@
         }
       }
     },
+    "discount.amount": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Amount"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "סכום"
+          }
+        }
+      }
+    },
+    "discount.apply": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apply"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "החלה"
+          }
+        }
+      }
+    },
+    "discount.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Replaces any earlier discount. It never exceeds the fare."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מחליפה הנחה קודמת. לא תעלה על מחיר הנסיעה."
+          }
+        }
+      }
+    },
+    "discount.kind": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discount type"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "סוג הנחה"
+          }
+        }
+      }
+    },
+    "discount.percent": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Percent"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "אחוזים"
+          }
+        }
+      }
+    },
+    "discount.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discount"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הנחה"
+          }
+        }
+      }
+    },
     "extra.airportBenGurion": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ben Gurion Airport"
+            "value": "Ben Gurion"
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "נמל התעופה בן גוריון"
+            "value": "נתב״ג"
           }
         }
       }
@@ -75,13 +228,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ramon or Haifa Airport"
+            "value": "Ramon/Haifa apt"
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "נמל התעופה רמון או חיפה"
+            "value": "שדה רמון / חיפה"
           }
         }
       }
@@ -92,13 +245,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Booked to pickup address"
+            "value": "Booked pickup"
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "הזמנה למקום האיסוף"
+            "value": "הזמנה לאיסוף"
           }
         }
       }
@@ -109,13 +262,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Carmel Tunnels, both segments"
+            "value": "Carmel, both"
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "מנהרות הכרמל, שני קטעים"
+            "value": "כרמל, שני קטעים"
           }
         }
       }
@@ -126,13 +279,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Carmel Tunnels, one segment"
+            "value": "Carmel, one"
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "מנהרות הכרמל, קטע אחד"
+            "value": "כרמל, קטע אחד"
           }
         }
       }
@@ -143,7 +296,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ben Gurion express lane"
+            "value": "BG express lane"
           }
         },
         "he": {
@@ -177,7 +330,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Highway 6, segment 18"
+            "value": "Hwy 6 segment 18"
           }
         },
         "he": {
@@ -409,6 +562,125 @@
         }
       }
     },
+    "invoice.dealer %@ %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Licensed dealer: %1$@, no. %2$@"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "עוסק מורשה: %1$@, מס׳ %2$@"
+          }
+        }
+      }
+    },
+    "invoice.distance %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Distance: %@ km"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מרחק: %@ ק״מ"
+          }
+        }
+      }
+    },
+    "invoice.driver %@ %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Driver: %1$@, ID %2$@"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "נהג: %1$@, ת.ז. %2$@"
+          }
+        }
+      }
+    },
+    "invoice.number %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Document no. %@"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מספר מסמך %@"
+          }
+        }
+      }
+    },
+    "invoice.tariff %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tariff: %@"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "סוג התעריף: %@"
+          }
+        }
+      }
+    },
+    "invoice.taxi %@ %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Taxi no. %1$@, licence %2$@"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מונית מס׳ %1$@, רישוי %2$@"
+          }
+        }
+      }
+    },
+    "invoice.times %@ %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From %1$@ to %2$@"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "משעה %1$@ עד %2$@"
+          }
+        }
+      }
+    },
     "location.denied": {
       "extractionState": "manual",
       "localizations": {
@@ -460,6 +732,23 @@
         }
       }
     },
+    "meter.agreedPrice": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agreed price"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מחיר מוסכם"
+          }
+        }
+      }
+    },
     "meter.distance": {
       "extractionState": "manual",
       "localizations": {
@@ -494,51 +783,19 @@
         }
       }
     },
-    "meter.idle.title": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ready"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "מוכן"
-          }
-        }
-      }
-    },
-    "meter.newTrip": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "New trip"
-          }
-        },
-        "he": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "נסיעה חדשה"
-          }
-        }
-      }
-    },
-    "meter.pause": {
+    "meter.fare.label": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pause"
+            "value": "Fare"
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "השהיה"
+            "value": "מחיר הנסיעה"
           }
         }
       }
@@ -589,6 +846,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "התחלת נסיעה"
+          }
+        }
+      }
+    },
+    "meter.state.free": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vacant"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "פנוי"
+          }
+        }
+      }
+    },
+    "meter.state.hired": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hired"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "תפוס"
+          }
+        }
+      }
+    },
+    "meter.state.payment": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Payment"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "תשלום"
           }
         }
       }
@@ -847,19 +1155,274 @@
         }
       }
     },
+    "profile.activeDealer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invoices issued by"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "החשבוניות יוצאות בשם"
+          }
+        }
+      }
+    },
+    "profile.addDealer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a dealer"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הוספת עוסק"
+          }
+        }
+      }
+    },
+    "profile.complete": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invoices will carry these details."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "החשבוניות יכללו פרטים אלה."
+          }
+        }
+      }
+    },
+    "profile.dealerName": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dealer name"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "שם העוסק"
+          }
+        }
+      }
+    },
+    "profile.dealerNumber": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dealer number"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מספר עוסק מורשה"
+          }
+        }
+      }
+    },
+    "profile.dealers": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Licensed dealers"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "עוסקים מורשים"
+          }
+        }
+      }
+    },
+    "profile.driver": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Driver"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "נהג"
+          }
+        }
+      }
+    },
+    "profile.driverId": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ID number"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מספר ת.ז."
+          }
+        }
+      }
+    },
+    "profile.driverId.invalid": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not a valid ID number"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מספר ת.ז. לא תקין"
+          }
+        }
+      }
+    },
+    "profile.driverName": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Driver name"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "שם הנהג"
+          }
+        }
+      }
+    },
+    "profile.incomplete": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Until every field is filled in, trips end without an invoice."
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "עד שכל השדות ימולאו, נסיעות יסתיימו ללא חשבונית."
+          }
+        }
+      }
+    },
+    "profile.licenceNumber": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Licence plate"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מספר רישוי"
+          }
+        }
+      }
+    },
+    "profile.taxi": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Taxi"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מונית"
+          }
+        }
+      }
+    },
+    "profile.taxiNumber": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Taxi number"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מספר מונית"
+          }
+        }
+      }
+    },
+    "profile.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Taxi and driver"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מונית ונהג"
+          }
+        }
+      }
+    },
     "rate.A": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tariff A"
+            "value": "Tariff 1"
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "תעריף א׳"
+            "value": "תעריף 1"
           }
         }
       }
@@ -870,13 +1433,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tariff B"
+            "value": "Tariff 2"
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "תעריף ב׳"
+            "value": "תעריף 2"
           }
         }
       }
@@ -887,13 +1450,30 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tariff C"
+            "value": "Tariff 3"
           }
         },
         "he": {
           "stringUnit": {
             "state": "translated",
-            "value": "תעריף ג׳"
+            "value": "תעריף 3"
+          }
+        }
+      }
+    },
+    "receipt.agreedPrice": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agreed price"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "מחיר מוסכם"
           }
         }
       }
@@ -911,6 +1491,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "אינו חשבונית מס. מונה אינו מונה מאושר."
+          }
+        }
+      }
+    },
+    "receipt.discount": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discount"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "הנחה"
           }
         }
       }
@@ -945,6 +1542,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "תוספות"
+          }
+        }
+      }
+    },
+    "receipt.extrasAndDiscount": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extras and discount"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "תוספות והנחה"
+          }
+        }
+      }
+    },
+    "receipt.paidCard": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paid by card"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "שולם באשראי"
+          }
+        }
+      }
+    },
+    "receipt.paidCash": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paid cash"
+          }
+        },
+        "he": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "שולם במזומן"
           }
         }
       }

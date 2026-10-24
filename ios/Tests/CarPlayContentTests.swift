@@ -15,8 +15,8 @@ struct CarPlayContentTests {
         let content = CarPlayContent(reading: reading, currentRateId: "A", locale: english)
         // Formatters may use non-breaking spaces; compare with plain ones.
         let details = content.items.map { $0.detail.replacing(/\s/, with: " ") }
-        #expect(details == ["₪41.66", "Tariff B", "14:32", "6.8 km"])
-        #expect(content.actions == [.pause, .stop])
+        #expect(details == ["₪41.66", "Tariff 2", "14:32", "6.8 km"])
+        #expect(content.actions == [.stop])
     }
 
     @Test func offersOnlyLegalActions() {
@@ -30,6 +30,6 @@ struct CarPlayContentTests {
 
     @Test func idleShowsTheTariffInForceNow() {
         let content = CarPlayContent(reading: .idle, currentRateId: "C", locale: english)
-        #expect(content.items[1].detail == "Tariff C")
+        #expect(content.items[1].detail == "Tariff 3")
     }
 }

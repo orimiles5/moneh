@@ -17,12 +17,20 @@ struct ReceiptCard: View {
                 }
             }
 
+            if let invoice = reading.invoice {
+                InvoiceDetails(invoice: invoice, reading: reading)
+                Divider().overlay(Palette.inkSecondary.color)
+            }
+
             VStack(spacing: Spacing.small) {
                 line("receipt.startingFare", reading.startingFare)
                 line("receipt.time \(elapsed)", reading.timeCharge)
                 line("receipt.distance \(distance)", reading.distanceCharge)
                 if reading.extras > 0 {
                     line("receipt.extras", reading.extras)
+                }
+                if reading.discount > 0 {
+                    line("receipt.discount", -reading.discount)
                 }
                 if reading.vatExempt {
                     line("receipt.vatExempt", 0)
@@ -34,6 +42,9 @@ struct ReceiptCard: View {
                 }
                 if reading.rounding != 0 {
                     line("receipt.rounding", reading.rounding)
+                }
+                if reading.agreedPrice > 0 {
+                    line("receipt.agreedPrice", reading.agreedPrice)
                 }
             }
             .font(Typography.body)
@@ -103,34 +114,53 @@ struct ReceiptCard: View {
 /// Slides the receipt out of a slot at the top of the screen, like a printer, then offers to share it.
 struct ReceiptSlot: View {
     let reading: FareReading
-    let onNewTrip: () -> Void
+    let onPaid: (_ paymentMethod: String) -> Void
+    let onExtras: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var printed: Bool
 
     /// [alreadyPrinted] skips the slide-out, for snapshots.
-    init(reading: FareReading, onNewTrip: @escaping () -> Void, alreadyPrinted: Bool = false) {
+    init(
+        reading: FareReading,
+        onPaid: @escaping (_ paymentMethod: String) -> Void,
+        onExtras: @escaping () -> Void = {},
+        alreadyPrinted: Bool = false
+    ) {
         self.reading = reading
-        self.onNewTrip = onNewTrip
+        self.onPaid = onPaid
+        self.onExtras = onExtras
         _printed = State(initialValue: alreadyPrinted)
     }
 
     var body: some View {
         VStack(spacing: Spacing.large) {
+            Text("meter.state.payment")
+                .font(Typography.headline)
+                .foregroundStyle(Palette.inkSecondary.color)
             VStack(spacing: 0) {
                 Capsule()
                     .fill(Palette.ink.color)
                     .frame(height: 6)
                     .zIndex(1)
-                ReceiptCard(reading: reading)
-                    .padding(.horizontal, Spacing.small)
-                    .offset(y: printed ? 0 : -600)
-                    .clipped()
+                // The invoice can be taller than the screen; it scrolls, the payment buttons stay put.
+                ScrollView {
+                    ReceiptCard(reading: reading)
+                        .padding(.horizontal, Spacing.small)
+                        .offset(y: printed ? 0 : -600)
+                }
+                .scrollBounceBehavior(.basedOnSize)
+                .clipped()
             }
-            .clipped()
-            Spacer(minLength: 0)
-            ReceiptShareButton(reading: reading)
-            PillButton("meter.newTrip", style: .accent, action: onNewTrip)
+            // Payment still takes tolls and discounts (spec 2018 §8.2.4, §9.10).
+            HStack(spacing: Spacing.medium) {
+                PillButton("receipt.extrasAndDiscount", style: .quiet, action: onExtras)
+                ReceiptShareButton(reading: reading)
+            }
+            HStack(spacing: Spacing.medium) {
+                PillButton("receipt.paidCash", style: .accent) { onPaid("cash") }
+                PillButton("receipt.paidCard", style: .accent) { onPaid("card") }
+            }
         }
         .onAppear {
             withAnimation(reduceMotion ? nil : .spring(response: 0.9, dampingFraction: 0.85)) { printed = true }
@@ -173,5 +203,39 @@ struct ReceiptShareButton: View {
         )
         renderer.scale = displayScale
         return renderer.uiImage.map { Image(uiImage: $0) }
+    }
+}
+
+/// Spec 2018 Annex A: who issued the invoice, for which taxi, and when.
+private struct InvoiceDetails: View {
+    let invoice: FareReading.Invoice
+    let reading: FareReading
+
+    @Environment(\.locale) private var locale
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.tiny) {
+            Text("invoice.number \(String(invoice.number))")
+                .font(Typography.label)
+            Text("invoice.dealer \(invoice.dealerName) \(invoice.dealerNumber)")
+            Text("invoice.taxi \(invoice.taxiNumber) \(invoice.licenceNumber)")
+            Text("invoice.driver \(invoice.driverName) \(invoice.driverId)")
+            if let start = reading.startedAt, let end = reading.stoppedAt {
+                Text("invoice.times \(time(start)) \(time(end))")
+            }
+            Text("invoice.distance \(metres)")
+            Text("invoice.tariff \(Text(LocalizedStringKey("rate." + reading.rateId)))")
+        }
+        .font(Typography.caption)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func time(_ date: Date) -> String {
+        date.formatted(.dateTime.hour().minute().locale(locale))
+    }
+
+    /// Annex A: distance in km to the metre.
+    private var metres: String {
+        (Double(reading.distanceMetres) / 1000).formatted(.number.precision(.fractionLength(3)).locale(locale))
     }
 }
